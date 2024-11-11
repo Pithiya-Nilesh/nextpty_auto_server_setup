@@ -18,11 +18,12 @@
    "label": "Site Name"
   },
   {
+   "default": "Creation Pending",
    "fieldname": "status",
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Status",
-   "options": "\nActivate\nDeactivate\nDropped\nPending\nIn Progress"
+   "options": "\nCreation Pending\nActivate\nDeactivate\nDropped\nPending\nIn Progress"
   },
   {
    "fieldname": "subscription",
@@ -35,7 +36,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-10-14 13:32:01.899075",
+ "modified": "2024-11-08 13:36:09.303557",
  "modified_by": "Administrator",
  "module": "Nextpty Auto Server Setup",
  "name": "Site",

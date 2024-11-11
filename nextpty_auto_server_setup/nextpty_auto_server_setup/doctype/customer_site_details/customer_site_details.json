@@ -1,7 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "format:{email}-{###}",
+ "autoname": "format:{customer}-{###}",
  "creation": "2024-10-09 11:41:30.766782",
  "doctype": "DocType",
  "engine": "InnoDB",
@@ -25,8 +25,10 @@
   {
    "fieldname": "customer",
    "fieldtype": "Link",
+   "in_list_view": 1,
    "label": "Customer",
-   "options": "Customer"
+   "options": "Customer",
+   "reqd": 1
   },
   {
    "fieldname": "site_details_section",
@@ -34,7 +36,7 @@
    "label": "Site Details"
   },
   {
-   "default": "0",
+   "default": "1",
    "fieldname": "enable",
    "fieldtype": "Check",
    "label": "Enable"
@@ -47,7 +49,8 @@
    "fieldname": "site_details",
    "fieldtype": "Table",
    "label": "Site Details",
-   "options": "Site"
+   "options": "Site",
+   "reqd": 1
   },
   {
    "fieldname": "contact_details_section",
@@ -58,7 +61,8 @@
    "fieldname": "contact_details",
    "fieldtype": "Table",
    "label": "Contact Details",
-   "options": "Customer Contacts"
+   "options": "Customer Contacts",
+   "reqd": 1
   },
   {
    "fieldname": "site_details_tab",
@@ -68,7 +72,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-11-08 11:13:32.424765",
+ "modified": "2024-11-11 13:05:37.768050",
  "modified_by": "Administrator",
  "module": "Nextpty Auto Server Setup",
  "name": "Customer Site Details",
