@@ -14,7 +14,7 @@ def site_status_change(payload):
         if parent and status in SITE_STATUSES:
             doc = frappe.get_doc("Customer Site Details", parent['parent'])
             for site in doc.site_details:
-                if site.sit_name == site:
+                if site.sit_name == site.split(".")[0]:
                     site.status = status
             doc.db_update()
             frappe.db.commit()
