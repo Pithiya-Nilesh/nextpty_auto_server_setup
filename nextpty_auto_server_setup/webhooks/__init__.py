@@ -19,7 +19,6 @@ def webhook():
     
     payload = frappe.request.get_json()
     event = payload.get('event')
-    frappe.log_error("response", payload)
-    if event == "Site Status Update":
-        site_status_change(payload)
     
+    if event == "Site Status Update":
+        return site_status_change(payload)

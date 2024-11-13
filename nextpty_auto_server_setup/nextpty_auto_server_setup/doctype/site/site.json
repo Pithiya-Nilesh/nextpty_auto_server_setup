@@ -23,7 +23,7 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Status",
-   "options": "\nCreation Pending\nActivate\nDeactivate\nDropped\nPending\nIn Progress"
+   "options": "\nCreation Pending\nPending\nInstalling\nUpdating\nActive\nInactive\nBroken\nArchived\nSuspended"
   },
   {
    "fieldname": "subscription",
@@ -36,7 +36,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-11-08 13:36:09.303557",
+ "modified": "2024-11-13 11:10:44.156247",
  "modified_by": "Administrator",
  "module": "Nextpty Auto Server Setup",
  "name": "Site",

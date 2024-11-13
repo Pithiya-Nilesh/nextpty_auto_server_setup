@@ -2,15 +2,6 @@ import frappe, requests
 
 
 @frappe.whitelist()
-def create_site(docname):
-    doc = frappe.get_doc("Customer Site Details", docname)
-    for site in doc.site_details:
-        if site.status == "Creation Pending":
-            create_site_in_frappe_cloud(site.site_name)
-       
-            
-            
-@frappe.whitelist()
 def create_site_in_frappe_cloud(site_name):
     
     frappe_credentials = frappe.get_single("Frappe Cloud Credentials")
