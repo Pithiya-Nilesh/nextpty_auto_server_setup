@@ -23,7 +23,12 @@ def create_site_in_frappe_cloud(site_name):
             "group": frappe_credentials.bench_id,
             "cluster": frappe_credentials.cluster,
             "plan": frappe_credentials.default_site_plan
-    }
+        }
     }
     
-    response = requests.post()
+    response = requests.post(url, headers=headers, json=data)
+    if response.status_code == 200:
+        frappe.log_error("Site creation success")
+    else:
+        frappe.log_error("Site creation failed", response)
+        frappe.log_error("Site creation failed text", response.text)
