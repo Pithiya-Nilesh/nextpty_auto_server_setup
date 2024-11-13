@@ -122,13 +122,17 @@
                             formdata: formData
                         },
                         callback: function(res) {
-                            console.log("Response:", res);
+                            document.getElementById('company_name').value = "";
+                            document.getElementById('contact_name').value = "";
+                            document.getElementById('contact_email').value = "";
+                            document.getElementById('site_name').value = "";
+
                         },
                         error: function(err) {
                             alert("Error: " + err.message);
                         },
                         freeze: true,
-                        freeze_message: frappe._("Please wait...")
+                        freeze_message: "Please wait..."
                     });
                 }
             });
