@@ -6,7 +6,7 @@ import frappe, json
 def signup(formdata):
     data = json.loads(formdata)
     if site_exist(data):
-        return frappe.throw(frappe._("Site Already Exists."), title=frappe._("Your Site Name is Alredy Exists. Please Enter Another Site Name"))
+        return frappe.throw(title=frappe._("Site Already Exists."), msg=frappe._("Your Site Name is Alredy Exists. Please Enter Another Site Name"))
     user = create_user(data)
     if user:
         customer = create_customer(data, user)

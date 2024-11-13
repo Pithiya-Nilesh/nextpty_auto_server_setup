@@ -14,11 +14,11 @@ def webhook():
 
     
     # Handle the webhook validation event (sent by FC for verification)
+    payload = frappe.request.get_json()
     event = payload.get('event')
+    
     if event == "Webhook Validate":
         return "Validated"
-    
-    payload = frappe.request.get_json()
     
     if event == "Site Status Update":
         return site_status_change(payload)
