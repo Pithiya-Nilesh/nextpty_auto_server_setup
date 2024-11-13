@@ -10,11 +10,11 @@
   "customer",
   "column_break_rwyv",
   "enable",
-  "contact_details_section",
-  "contact_details",
-  "site_details_tab",
   "site_details_section",
-  "site_details"
+  "site_details",
+  "contact_details_tab",
+  "contact_details_section",
+  "contact_details"
  ],
  "fields": [
   {
@@ -65,14 +65,14 @@
    "reqd": 1
   },
   {
-   "fieldname": "site_details_tab",
+   "fieldname": "contact_details_tab",
    "fieldtype": "Tab Break",
-   "label": "Site Details"
+   "label": "Contact Details"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-11-11 13:05:37.768050",
+ "modified": "2024-11-13 13:05:22.072389",
  "modified_by": "Administrator",
  "module": "Nextpty Auto Server Setup",
  "name": "Customer Site Details",
