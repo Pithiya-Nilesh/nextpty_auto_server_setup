@@ -1,12 +1,19 @@
 from datetime import datetime, timedelta
+import re
 import frappe, json
 
 
 @frappe.whitelist(allow_guest=True)
 def signup(formdata):
     data = json.loads(formdata)
-    if site_exist(data):
+    site_name = re.sub(r'[^a-zA-Z0-9_]', '', data["site_name"].lower().replace(" ", "_"))
+    
+    if len(site_name) < 5:
+        return frappe.throw(msg="site name is too short. use 5 or more characters.", title="site name is too short.")
+    
+    if site_exist(site_name):
         return frappe.throw(title=frappe._("Site Already Exists."), msg=frappe._("Your Site Name is Alredy Exists. Please Enter Another Site Name"))
+    
     user = create_user(data)
     if user:
         customer = create_customer(data, user)
@@ -17,8 +24,8 @@ def signup(formdata):
                     frappe.msgprint(title=frappe._('Success'), msg=frappe._("Your site creation is in progress..."))
 
 
-def site_exist(data):
-    site_name = data["site_name"]
+@frappe.whitelist()
+def site_exist(site_name):
     query = """
         SELECT site_name 
         FROM `tabSite` 
@@ -26,7 +33,7 @@ def site_exist(data):
     """
     result = frappe.db.sql(query, (site_name,), as_dict=True)
     return True if result else False
-    
+
 
 def create_user(data):
     try:
@@ -54,18 +61,24 @@ def create_user(data):
 
 
 def create_customer(data, user):
-    try:
-        if frappe.db.exists("Customer", {"customer_name": f"{data['company_name']}"}):
-            return frappe.db.get_value("Customer", filters={"customer_name": f"{data['company_name']}"}, fieldname=['name'])
+    try:       
+        docname = frappe.db.get_value("Customer", {"customer_name": data['company_name']}, fieldname=['name'])
+        if docname:
+            doc = frappe.get_doc("Customer", docname)
         else:
             doc = frappe.new_doc("Customer")
             doc.customer_name = data['company_name']
+        
+        existing_portal_user = next((user for user in doc.portal_users if user.user == user), None)
+        if not existing_portal_user:
             doc.append('portal_users', {
                 'user': user
             })
-            doc.insert(ignore_permissions=True)
-            frappe.db.commit()
-            return frappe.db.get_value("Customer", filters={"customer_name": data['company_name']}, fieldname=['name'])
+        
+        doc.save(ignore_permissions=True)
+        frappe.db.commit()
+        return frappe.db.get_value("Customer", filters={"customer_name": data['company_name']}, fieldname=['name'])
+
             
     except Exception as e:
         frappe.log_error("Error: While Creating Customer", f"Error: {e}\ndata: {data}")
@@ -127,5 +140,3 @@ def create_site_record(data, customer, subscription):
         frappe.log_error("Error: While Creating Site Record", f"Error: {e}\ndata: {data}\ncustomer: {customer}")
         frappe.throw(msg=e, title=frappe._("Somthing Want Wrong!"))
         return False
-    
-# {"company_name":"1","contact_name":"3","contact_email":"4@mail.com","site_name":"sdg"}
