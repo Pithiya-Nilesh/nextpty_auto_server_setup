@@ -6,7 +6,7 @@ import frappe, json
 @frappe.whitelist(allow_guest=True)
 def signup(formdata):
     data = json.loads(formdata)
-    site_name = re.sub(r'[^a-zA-Z0-9_]', '', data["site_name"].lower().replace(" ", "_"))
+    site_name = re.sub(r'[^a-zA-Z0-9-]', '', data["site_name"].lower().replace(" ", "-"))
     
     if len(site_name) < 5:
         return frappe.throw(msg="site name is too short. use 5 or more characters.", title="site name is too short.")

@@ -146,8 +146,8 @@
 
             siteNameInput.addEventListener("input", function() {
                 var siteName = siteNameInput.value;
-                siteName = siteName.replace(/[\s\-]+/g, '_');
-                siteName = siteName.replace(/[^a-zA-Z0-9_]/g, '');
+                siteName = siteName.replace(/[\s\+]_/g, '-');
+                siteName = siteName.replace(/[^a-zA-Z0-9-]/g, '');
                 siteNameInput.value = siteName.toLowerCase()
                 if (siteName.toLowerCase().length < 5) {
                     document.getElementById('site_name_error').textContent = 'Site Name is too short. use 5 or more characters.';
