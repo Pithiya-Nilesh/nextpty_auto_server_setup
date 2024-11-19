@@ -32,14 +32,14 @@ def site_status_change(payload):
 @frappe.whitelist()
 def auto_setup_site(site, parent):
     try:
-        site = f"{site}.frappe.cloud"
+        site_name = f"{site}.frappe.cloud"
         company = frappe.db.get_value("Customer Site Details", parent, 'customer')
-        data = frappe.db.sql(f""" SELECT site_owner_email, site_owner_name FROM `tabSite Details` WHERE site_name="{site}" and parent="{parent}" """, as_dict=True)
+        data = frappe.db.sql(f""" SELECT name, is_new_site, site_owner_email, site_owner_name FROM `tabSite Details` WHERE site_name="{site_name}" and parent="{parent}" """, as_dict=True)
         if data:
             email = data[0]['site_owner_email']
             first_name = data[0]['site_owner_name']
         
-            data = {
+            args = {
                 "language": "Español (Colombia)",
                 "country": "Panamá",
                 "timezone": "America/Panama",
@@ -54,11 +54,20 @@ def auto_setup_site(site, parent):
                 "setup_demo": 0
             }
             
-            url = f"https://{site}/api/method/nextpty_customization.apis.auto_setup.custom_setup_complete?args={data}&email={email}&first_name={first_name}"
+            url = f"https://{site}/api/method/nextpty_customization.apis.auto_setup.custom_setup_complete?args={args}&email={email}&first_name={first_name}"
 
             res = requests.post(url=url)
-            print("\n\n res code", res.status_code)
-            print("\n\n res text", res.text)
             frappe.log_error("Auto creaton", f"code: {res.status_code}\ntext: {res.text}")
+            
+            if data[0]['is_new_site']:
+                frappe.db.sql(f""" UPDATE `tabSite Details` SET is_new_site=0 WHERE name="{data[0]['name']}" """)
+                frappe.db.commit()
+                set_site_active_email(site)
+                
+            
     except Exception as e:
         frappe.log_error("Error: While auto setup new site", f"Error: {e}\nsite: {site}\nparent: {parent}")
+
+
+def set_site_active_email(site):
+    pass
