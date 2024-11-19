@@ -12,7 +12,7 @@ def site_status_change(payload):
         site = data.get('name').split(".")[0]
         status = data.get('status')
         
-        parent = frappe.db.sql(f""" SELECT parent FROM `tabSite` WHERE site_name="{site}" """, as_dict=True)
+        parent = frappe.db.sql(f""" SELECT parent FROM `tabSite Details` WHERE site_name="{site}" """, as_dict=True)
         if parent and status in SITE_STATUSES:
             doc = frappe.get_doc("Customer Site Details", parent[0]['parent'])
             for d_site in doc.site_details:
@@ -21,7 +21,7 @@ def site_status_change(payload):
             doc.save(ignore_permissions=True)
             frappe.db.commit()
         
-        if status == "Active":
+        if status == "Active" and parent:
             auto_setup_site(site, parent[0]['parent'])
         
     except Exception as e:
@@ -31,31 +31,34 @@ def site_status_change(payload):
 
 @frappe.whitelist()
 def auto_setup_site(site, parent):
-    site = f"{site}.frappe.cloud"
-    company = frappe.db.get_value("Customer Site Details", parent, 'customer')
-    data = frappe.db.sql(f""" SELECT site_owner_email, site_owner_name FROM `tabSite Details` WHERE site_name="{site}" and parent="{parent}" """, as_dict=True)
-    if data:
-        email = data[0]['site_owner_email']
-        first_name = data[0]['site_owner_name']
-    
-        data = {
-            "language": "Español (Colombia)",
-            "country": "Panamá",
-            "timezone": "America/Panama",
-            "currency": "USD",
-            
-            "company_name": company,
-            "company_abbr": get_abbr(company),
-            
-            "chart_of_accounts": "India - Chart of Accounts",
-            "fy_start_date": "2024-04-01",
-            "fy_end_date": "2025-03-31",
-            "setup_demo": 0
-        }
+    try:
+        site = f"{site}.frappe.cloud"
+        company = frappe.db.get_value("Customer Site Details", parent, 'customer')
+        data = frappe.db.sql(f""" SELECT site_owner_email, site_owner_name FROM `tabSite Details` WHERE site_name="{site}" and parent="{parent}" """, as_dict=True)
+        if data:
+            email = data[0]['site_owner_email']
+            first_name = data[0]['site_owner_name']
         
-        url = f"https://{site}/api/method/nextpty_customization.apis.auto_setup.custom_setup_complete?args={data}&email={email}&first_name={first_name}"
+            data = {
+                "language": "Español (Colombia)",
+                "country": "Panamá",
+                "timezone": "America/Panama",
+                "currency": "USD",
+                
+                "company_name": company,
+                "company_abbr": get_abbr(company),
+                
+                "chart_of_accounts": "India - Chart of Accounts",
+                "fy_start_date": "2024-04-01",
+                "fy_end_date": "2025-03-31",
+                "setup_demo": 0
+            }
+            
+            url = f"https://{site}/api/method/nextpty_customization.apis.auto_setup.custom_setup_complete?args={data}&email={email}&first_name={first_name}"
 
-        res = requests.post(url=url)
-        print("\n\n res code", res.status_code)
-        print("\n\n res text", res.text)
-        frappe.log_error("Auto creaton", f"code: {res.status_code}\ntext: {res.text}")
+            res = requests.post(url=url)
+            print("\n\n res code", res.status_code)
+            print("\n\n res text", res.text)
+            frappe.log_error("Auto creaton", f"code: {res.status_code}\ntext: {res.text}")
+    except Exception as e:
+        frappe.log_error("Error: While auto setup new site", f"Error: {e}\nsite: {site}\nparent: {parent}")
