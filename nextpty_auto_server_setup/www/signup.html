@@ -52,7 +52,13 @@
     </div>
 
     <script>
-       document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function() {
+            var logged_in_user = frappe.session.user
+            //  || logged_in_user !== 'Administrator'
+            if (logged_in_user !== 'Administrator'){
+                get_logged_in_user_details()
+            }
+
             var signupForm = document.getElementById('signupForm');
             
             function validateForm() {
@@ -141,7 +147,6 @@
                 }
             });
         
-           
             var siteNameInput = document.getElementById('site_name');
 
             siteNameInput.addEventListener("input", function() {
@@ -159,6 +164,20 @@
                 }
             });          
 
+            function get_logged_in_user_details(){
+                frappe.call({
+                    method: 'nextpty_auto_server_setup.www.signup.get_logged_in_user_details',
+                    args: {
+                        user: frappe.session.user
+                    },
+                    callback: function(res){
+                        console.log("user details", res)
+                            var company_name = document.getElementById('company_name').value = res.message['customer']
+                            var contact_name = document.getElementById('contact_name').value = res.message['contact_name']
+                            var contact_email = document.getElementById('contact_email').value = res.message['contact_email']
+                    }
+                })
+            }
             
         });
     </script>

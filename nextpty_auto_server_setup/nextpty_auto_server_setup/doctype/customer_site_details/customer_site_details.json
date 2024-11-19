@@ -49,7 +49,7 @@
    "fieldname": "site_details",
    "fieldtype": "Table",
    "label": "Site Details",
-   "options": "Site",
+   "options": "Site Details",
    "reqd": 1
   },
   {
@@ -72,7 +72,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-11-13 13:05:22.072389",
+ "modified": "2024-11-14 13:01:24.239522",
  "modified_by": "Administrator",
  "module": "Nextpty Auto Server Setup",
  "name": "Customer Site Details",

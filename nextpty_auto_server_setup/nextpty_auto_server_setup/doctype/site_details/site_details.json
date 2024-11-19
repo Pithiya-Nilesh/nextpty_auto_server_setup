@@ -1,0 +1,85 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2024-10-14 13:29:00.348337",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "site_name",
+  "status",
+  "site_owner_email",
+  "site_owner_name",
+  "is_new_site",
+  "activate",
+  "deactivate",
+  "drop"
+ ],
+ "fields": [
+  {
+   "fieldname": "site_name",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Site Name",
+   "options": "Site"
+  },
+  {
+   "default": "Creation Pending",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "\nCreation Pending\nPending\nInstalling\nUpdating\nActive\nInactive\nBroken\nArchived\nSuspended"
+  },
+  {
+   "depends_on": "eval:doc.status === \"Inactive\"",
+   "fieldname": "activate",
+   "fieldtype": "Button",
+   "label": "Activate Site"
+  },
+  {
+   "depends_on": "eval:doc.status === \"Active\"",
+   "fieldname": "deactivate",
+   "fieldtype": "Button",
+   "label": "Deactivate Site"
+  },
+  {
+   "depends_on": "eval:doc.status === \"Inactive\" || doc.status === \"Active\"",
+   "fieldname": "drop",
+   "fieldtype": "Button",
+   "label": "Drop Site"
+  },
+  {
+   "default": "1",
+   "fieldname": "is_new_site",
+   "fieldtype": "Check",
+   "label": "Is New Site"
+  },
+  {
+   "fieldname": "site_owner_email",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Site Owner Email",
+   "options": "User"
+  },
+  {
+   "fetch_from": "site_owner_email.first_name",
+   "fieldname": "site_owner_name",
+   "fieldtype": "Data",
+   "label": "Site Owner Name"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2024-11-19 17:36:53.768992",
+ "modified_by": "Administrator",
+ "module": "Nextpty Auto Server Setup",
+ "name": "Site Details",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

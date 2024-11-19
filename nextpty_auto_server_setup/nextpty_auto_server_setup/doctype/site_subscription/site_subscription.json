@@ -1,0 +1,51 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2024-11-14 13:05:40.872891",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "subscription",
+  "is_trial",
+  "is_active"
+ ],
+ "fields": [
+  {
+   "fieldname": "subscription",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Subscription",
+   "options": "Subscription"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_trial",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "is Trial"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_active",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "is Active"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2024-11-14 13:07:09.229568",
+ "modified_by": "Administrator",
+ "module": "Nextpty Auto Server Setup",
+ "name": "Site Subscription",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

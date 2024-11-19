@@ -9,6 +9,7 @@
   "site",
   "column_break_ljlp",
   "status",
+  "type_of_api",
   "request_section",
   "request",
   "response_section",
@@ -30,15 +31,16 @@
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Status",
-   "options": "Success\nFailed\nIn Progress",
+   "options": "\nSuccess\nFailed",
    "read_only": 1
   },
   {
    "fieldname": "site",
-   "fieldtype": "Data",
+   "fieldtype": "Link",
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Site",
+   "options": "Site",
    "read_only": 1
   },
   {
@@ -66,12 +68,19 @@
    "fieldtype": "Code",
    "label": "response",
    "read_only": 1
+  },
+  {
+   "fieldname": "type_of_api",
+   "fieldtype": "Select",
+   "label": "Type of API",
+   "options": "\nCreate New Site\nActivate Site\nDeactivate Site\nDrop Site",
+   "read_only": 1
   }
  ],
  "in_create": 1,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-10-14 13:43:05.184732",
+ "modified": "2024-11-15 18:12:52.409277",
  "modified_by": "Administrator",
  "module": "Nextpty Auto Server Setup",
  "name": "Site Creation Log",
@@ -86,6 +95,16 @@
    "read": 1,
    "report": 1,
    "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "report": 1,
+   "role": "Guest",
    "share": 1,
    "write": 1
   }

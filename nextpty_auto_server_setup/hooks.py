@@ -148,23 +148,23 @@ app_license = "mit"
 # Scheduled Tasks
 # ---------------
 
-# scheduler_events = {
-# 	"all": [
-# 		"nextpty_auto_server_setup.tasks.all"
-# 	],
-# 	"daily": [
-# 		"nextpty_auto_server_setup.tasks.daily"
-# 	],
-# 	"hourly": [
-# 		"nextpty_auto_server_setup.tasks.hourly"
-# 	],
-# 	"weekly": [
-# 		"nextpty_auto_server_setup.tasks.weekly"
-# 	],
-# 	"monthly": [
-# 		"nextpty_auto_server_setup.tasks.monthly"
-# 	],
-# }
+scheduler_events = {
+	# "all": [
+	# 	"nextpty_auto_server_setup.tasks.all"
+	# ],
+	"daily": [
+		"nextpty_auto_server_setup.schedular.subscription.check_and_deactivate_expired_subscription_sites"
+	],
+	# "hourly": [
+	# 	"nextpty_auto_server_setup.tasks.hourly"
+	# ],
+	# "weekly": [
+	# 	"nextpty_auto_server_setup.tasks.weekly"
+	# ],
+	# "monthly": [
+	# 	"nextpty_auto_server_setup.tasks.monthly"
+	# ],
+}
 
 # Testing
 # -------

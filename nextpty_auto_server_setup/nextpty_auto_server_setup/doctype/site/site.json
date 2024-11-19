@@ -1,47 +1,50 @@
 {
  "actions": [],
  "allow_rename": 1,
- "creation": "2024-10-14 13:29:00.348337",
+ "autoname": "field:site_name",
+ "creation": "2024-11-14 13:02:06.761398",
  "doctype": "DocType",
- "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
   "site_name",
-  "status",
-  "subscription"
+  "site_subscription"
  ],
  "fields": [
   {
    "fieldname": "site_name",
    "fieldtype": "Data",
-   "in_list_view": 1,
-   "label": "Site Name"
+   "label": "Site Name",
+   "unique": 1
   },
   {
-   "default": "Creation Pending",
-   "fieldname": "status",
-   "fieldtype": "Select",
-   "in_list_view": 1,
-   "label": "Status",
-   "options": "\nCreation Pending\nPending\nInstalling\nUpdating\nActive\nInactive\nBroken\nArchived\nSuspended"
-  },
-  {
-   "fieldname": "subscription",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "label": "Subscription",
-   "options": "Subscription"
+   "fieldname": "site_subscription",
+   "fieldtype": "Table",
+   "label": "Site Subscription",
+   "options": "Site Subscription"
   }
  ],
  "index_web_pages_for_search": 1,
- "istable": 1,
  "links": [],
- "modified": "2024-11-13 11:10:44.156247",
+ "modified": "2024-11-14 13:10:38.546138",
  "modified_by": "Administrator",
  "module": "Nextpty Auto Server Setup",
  "name": "Site",
+ "naming_rule": "By fieldname",
  "owner": "Administrator",
- "permissions": [],
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": []

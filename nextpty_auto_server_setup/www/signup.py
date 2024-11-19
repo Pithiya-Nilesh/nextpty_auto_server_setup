@@ -20,15 +20,16 @@ def signup(formdata):
         if customer:
             subscription = create_subscription(data, customer)
             if subscription:
-                if create_site_record(data, customer, subscription):
-                    frappe.msgprint(title=frappe._('Success'), msg=frappe._("Your site creation is in progress..."))
+                if create_site_record(data['site_name'], subscription):
+                    if create_customer_site_details_record(data, customer):
+                        frappe.msgprint(title=frappe._('Success'), msg=frappe._("Your site creation is in progress..."))
 
 
 @frappe.whitelist()
 def site_exist(site_name):
     query = """
         SELECT site_name 
-        FROM `tabSite` 
+        FROM `tabSite Details` 
         WHERE site_name = %s AND status != 'Dropped'
     """
     result = frappe.db.sql(query, (site_name,), as_dict=True)
@@ -69,7 +70,7 @@ def create_customer(data, user):
             doc = frappe.new_doc("Customer")
             doc.customer_name = data['company_name']
         
-        existing_portal_user = next((user for user in doc.portal_users if user.user == user), None)
+        existing_portal_user = next((u for u in doc.portal_users if u.user == user), None)
         if not existing_portal_user:
             doc.append('portal_users', {
                 'user': user
@@ -85,7 +86,7 @@ def create_customer(data, user):
         frappe.throw(msg=e, title=frappe._("Somthing Want wrong"))
 
 
-def create_subscription(data, customer):
+def create_subscription(data, customer, plan="Trial"):
     try:
         doc = frappe.new_doc("Subscription")
         doc.party_type = "Customer"
@@ -94,7 +95,7 @@ def create_subscription(data, customer):
         trial_period_end_date = datetime.today() + timedelta(days=60)
         doc.trial_period_end = trial_period_end_date.strftime('%Y-%m-%d')
         doc.append('plans', {
-            'plan': "Trial",
+            'plan': plan,
             'qty': 1
         })
         doc.insert(ignore_permissions=True)
@@ -107,7 +108,30 @@ def create_subscription(data, customer):
         return False
 
 
-def create_site_record(data, customer, subscription):
+def create_site_record(site_name, subscription, is_trial=1, is_active=1):
+    try:
+        docname = frappe.db.get_value("Site", filters={"name": site_name}, fieldname=['name'])
+        if docname:
+            doc = frappe.get_doc("Site", docname)
+        else:
+            doc = frappe.new_doc("Site")
+            doc.site_name = site_name
+            
+        doc.append('site_subscription', {
+            "subscription": subscription,
+            "is_trial": is_trial,
+            "is_active": is_active
+        })
+        doc.save(ignore_permissions=True)
+        frappe.db.commit()
+        return True
+    
+    except Exception as e:
+        frappe.log_error("Error: White creating site record", f"Error: {e}\nsite_name: {site_name}\nsubscription: {subscription}")
+        return False
+
+
+def create_customer_site_details_record(data, customer):
     try:
         docname = frappe.db.get_value("Customer Site Details", {"customer": data['company_name']}, fieldname=['name'])
         if docname:
@@ -127,9 +151,9 @@ def create_site_record(data, customer, subscription):
             
         existing_site = next((site for site in doc.site_details if site.site_name == data['site_name']), None)
         if not existing_site:
-            doc.append("site_details",{
+            doc.append("site_details", {
                 "site_name": data['site_name'],
-                "subscription": subscription
+                "site_owner_email": data['contact_email']
             })
 
         doc.save(ignore_permissions=True)
@@ -137,6 +161,21 @@ def create_site_record(data, customer, subscription):
         return True
     
     except Exception as e:
-        frappe.log_error("Error: While Creating Site Record", f"Error: {e}\ndata: {data}\ncustomer: {customer}")
+        frappe.log_error("Error: While Creating Site Details  Record", f"Error: {e}\ndata: {data}\ncustomer: {customer}")
         frappe.throw(msg=e, title=frappe._("Somthing Want Wrong!"))
         return False
+
+
+@frappe.whitelist(allow_guest=True)
+def get_logged_in_user_details(user=""):
+    try:
+        user = frappe.session.user if not user else user
+        c_data = frappe.db.sql(f""" SELECT parent FROM `tabPortal User` WHERE user="{user}" """, as_dict=True)
+        u_data = frappe.db.get_value("User", filters={'email': user}, fieldname=['first_name'])
+        if c_data:
+            data = {'customer': c_data[0]['parent'], 'contact_name': u_data, 'contact_email': user}
+        else:
+            data = {'customer': "", 'contact_name': "", 'contact_email': ""}
+        return data
+    except Exception as e:
+        frappe.log_error("Error: While get logged in user data", f"Error: {e}\nuser: {user}")

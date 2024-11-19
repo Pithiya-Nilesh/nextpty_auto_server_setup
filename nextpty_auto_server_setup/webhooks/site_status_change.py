@@ -1,4 +1,6 @@
 import frappe
+from frappe.utils import get_abbr
+import requests
 
 SITE_STATUSES = ["Pending", "Installing", "Updating", "Active", "Inactive", "Broken", "Archived", "Suspended"]
 
@@ -18,6 +20,42 @@ def site_status_change(payload):
                     d_site.status = status
             doc.save(ignore_permissions=True)
             frappe.db.commit()
+        
+        if status == "Active":
+            auto_setup_site(site, parent[0]['parent'])
+        
     except Exception as e:
         frappe.log_error("Error: While update site status using webhooks", f"Error: {e}\npayload: {payload}")
         return e
+
+
+@frappe.whitelist()
+def auto_setup_site(site, parent):
+    site = f"{site}.frappe.cloud"
+    company = frappe.db.get_value("Customer Site Details", parent, 'customer')
+    data = frappe.db.sql(f""" SELECT site_owner_email, site_owner_name FROM `tabSite Details` WHERE site_name="{site}" and parent="{parent}" """, as_dict=True)
+    if data:
+        email = data[0]['site_owner_email']
+        first_name = data[0]['site_owner_name']
+    
+        data = {
+            "language": "Español (Colombia)",
+            "country": "Panamá",
+            "timezone": "America/Panama",
+            "currency": "USD",
+            
+            "company_name": company,
+            "company_abbr": get_abbr(company),
+            
+            "chart_of_accounts": "India - Chart of Accounts",
+            "fy_start_date": "2024-04-01",
+            "fy_end_date": "2025-03-31",
+            "setup_demo": 0
+        }
+        
+        url = f"https://{site}/api/method/nextpty_customization.apis.auto_setup.custom_setup_complete?args={data}&email={email}&first_name={first_name}"
+
+        res = requests.post(url=url)
+        print("\n\n res code", res.status_code)
+        print("\n\n res text", res.text)
+        frappe.log_error("Auto creaton", f"code: {res.status_code}\ntext: {res.text}")
