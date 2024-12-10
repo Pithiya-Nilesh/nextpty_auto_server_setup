@@ -40,6 +40,10 @@ def auto_setup_site(site, parent):
             email = data[0]['site_owner_email']
             first_name = data[0]['site_owner_name']
         
+            from datetime import datetime
+            today = datetime.now()
+            fy_start_date = f"{today.year}-01-01"
+            fy_end_date = f"{today.year + 1}-12-31"
             args = {
                 "language": "Español (Colombia)",
                 "country": "Panamá",
@@ -47,9 +51,9 @@ def auto_setup_site(site, parent):
                 "currency": "USD",
                 "company_name": company,
                 "company_abbr": get_abbr(company),
-                "chart_of_accounts": "India - Chart of Accounts",
-                "fy_start_date": "2024-04-01",
-                "fy_end_date": "2025-03-31",
+                "chart_of_accounts": "Standard with Numbers",
+                "fy_start_date": f"{fy_start_date}",
+                "fy_end_date": f"{fy_end_date}",
                 "setup_demo": 0
             }
             
