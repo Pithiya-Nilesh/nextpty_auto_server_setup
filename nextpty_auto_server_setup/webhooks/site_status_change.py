@@ -43,7 +43,7 @@ def auto_setup_site(site, parent):
             from datetime import datetime
             today = datetime.now()
             fy_start_date = f"{today.year}-01-01"
-            fy_end_date = f"{today.year + 1}-12-31"
+            fy_end_date = f"{today.year}-12-31"
             args = {
                 "language": "Español (Colombia)",
                 "country": "Panamá",
