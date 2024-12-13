@@ -19,8 +19,6 @@
   {
    "fieldname": "customer_details",
    "fieldtype": "Link",
-   "in_list_view": 1,
-   "in_standard_filter": 1,
    "label": "Customer Details",
    "options": "Customer Site Details",
    "read_only": 1
@@ -80,7 +78,7 @@
  "in_create": 1,
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-12-13 11:19:59.630724",
+ "modified": "2024-12-13 16:07:12.820897",
  "modified_by": "Administrator",
  "module": "Nextpty Auto Server Setup",
  "name": "Site Creation Log",
