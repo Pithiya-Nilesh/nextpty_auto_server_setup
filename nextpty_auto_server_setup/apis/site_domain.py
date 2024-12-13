@@ -1,3 +1,4 @@
+from time import sleep
 from frappe.utils.password import get_decrypted_password
 from nextpty_auto_server_setup.apis.site import set_frappe_cloud_logs
 import frappe, json, requests
@@ -58,6 +59,7 @@ def create_dns_record_and_add_domain(site, parent=""):
         elif change_status == "PENDING":
             cname_response = serialize_response(cname_response)
             set_frappe_cloud_logs("Success", site, data, cname_response, "Add CNAME Record")
+            sleep(30)
             add_domain(site_name, domain, site)
             return {"status": True, "response": cname_response}
 
@@ -184,6 +186,7 @@ def serialize_response(response):
     return response
 
 
+@frappe.whitelist()
 def add_domain(site_name, domain, site):
     try:       
         frappe_credentials = frappe.get_single("Frappe Cloud Credentials")
