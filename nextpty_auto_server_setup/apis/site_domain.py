@@ -2,26 +2,29 @@ from frappe.utils.password import get_decrypted_password
 from nextpty_auto_server_setup.apis.site import set_frappe_cloud_logs
 import frappe, json, requests
 
-import boto3
-aws_settings = frappe.get_doc("Route53 Settings", "Route53 Settings")
-HOSTED_ZONE_ID = aws_settings.hosted_zone_id
-aws_access_key_id = get_decrypted_password("Route53 Settings", "Route53 Settings", 'aws_access_key_id', raise_exception=False)
-secret_access_key = get_decrypted_password("Route53 Settings", "Route53 Settings", 'aws_secret_access_key', raise_exception=False)
+try:
+    import boto3
+    aws_settings = frappe.get_doc("Route53 Settings", "Route53 Settings")
+    HOSTED_ZONE_ID = aws_settings.hosted_zone_id
+    aws_access_key_id = get_decrypted_password("Route53 Settings", "Route53 Settings", 'aws_access_key_id', raise_exception=False)
+    secret_access_key = get_decrypted_password("Route53 Settings", "Route53 Settings", 'aws_secret_access_key', raise_exception=False)
 
-# client = boto3.client(
-#     'route53',
-#     aws_access_key_id = aws_access_key_id,
-#     aws_secret_access_key = secret_access_key,
-#     region_name = aws_settings.default_region
-# )
+    # client = boto3.client(
+    #     'route53',
+    #     aws_access_key_id = aws_access_key_id,
+    #     aws_secret_access_key = secret_access_key,
+    #     region_name = aws_settings.default_region
+    # )
 
-session = boto3.Session(
-    aws_access_key_id=aws_access_key_id,
-    aws_secret_access_key=secret_access_key,
-    region_name=aws_settings.default_region
-)
+    session = boto3.Session(
+        aws_access_key_id=aws_access_key_id,
+        aws_secret_access_key=secret_access_key,
+        region_name=aws_settings.default_region
+    )
 
-client = session.client('route53')
+    client = session.client('route53')
+except Exception as e:
+    frappe.log_error("Error: While create aws session", f"Error: {e}")
 
 
 @frappe.whitelist()
