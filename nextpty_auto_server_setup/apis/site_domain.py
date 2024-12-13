@@ -9,18 +9,20 @@ try:
     HOSTED_ZONE_ID = aws_settings.hosted_zone_id
     aws_access_key_id = get_decrypted_password("Route53 Settings", "Route53 Settings", 'aws_access_key_id', raise_exception=False)
     secret_access_key = get_decrypted_password("Route53 Settings", "Route53 Settings", 'aws_secret_access_key', raise_exception=False)
-
+    region = aws_settings.default_region
+    
     # client = boto3.client(
     #     'route53',
     #     aws_access_key_id = aws_access_key_id,
     #     aws_secret_access_key = secret_access_key,
     #     region_name = aws_settings.default_region
     # )
+    frappe.log_error("Test Route53 credentials.", f"key: {aws_access_key_id}\nsecret: {secret_access_key}\nregion: {region}\nhosted zone id: {HOSTED_ZONE_ID}")
 
     session = boto3.Session(
         aws_access_key_id=aws_access_key_id,
         aws_secret_access_key=secret_access_key,
-        region_name=aws_settings.default_region
+        region_name=region
     )
 
     client = session.client('route53')

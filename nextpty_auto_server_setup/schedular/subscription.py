@@ -106,3 +106,9 @@ def deactivate_trial_subscription_end_sites(trial_subscription_end_sites):
     if trial_subscription_end_sites:
         for site_name in trial_subscription_end_sites:
             return deactivate_site(site_name)
+
+
+
+@frappe.whitelist()
+def re_new_subscription(site):
+    pass
