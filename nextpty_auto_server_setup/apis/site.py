@@ -136,8 +136,7 @@ def drop_site(site_name):
         
     except Exception as e:
         frappe.log_error("Error: While Deactivate Site In Frappe Cloud", f"Error: {e}\nsite_name: {site_name}")
-
-        
+  
         
 @frappe.whitelist()
 def update_site_status(row_name, status, action):
@@ -165,5 +164,6 @@ def set_frappe_cloud_logs(status, site_name, request, response, type_of_api):
         log.response = json.dumps(response, indent=4)
         log.type_of_api = type_of_api
         log.save()
+        frappe.db.commit()
     except Exception as e:
         frappe.log_error("Error: While Set FC API Log", f"site name: {site_name}\nstatus: {status}\nresponse: {response}\nError: {e}")

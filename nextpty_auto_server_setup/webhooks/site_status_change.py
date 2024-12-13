@@ -1,6 +1,7 @@
 import json
 import frappe
 from frappe.utils import get_abbr
+from nextpty_auto_server_setup.apis.site_domain import create_dns_record_and_add_domain
 import requests
 
 SITE_STATUSES = ["Pending", "Installing", "Updating", "Active", "Inactive", "Broken", "Archived", "Suspended"]
@@ -23,7 +24,7 @@ def site_status_change(payload):
             frappe.db.commit()
         
         if status == "Active" and parent:
-            auto_setup_site(site, parent[0]['parent'])
+            configure_site_for_active_status(site, parent[0]['parent'])
         
     except Exception as e:
         frappe.log_error("Error: While update site status using webhooks", f"Error: {e}\npayload: {payload}")
@@ -31,47 +32,48 @@ def site_status_change(payload):
 
 
 @frappe.whitelist()
-def auto_setup_site(site, parent):
+def configure_site_for_active_status(site, parent):
     try:
         site_name = f"{site}.frappe.cloud"
         company = frappe.db.get_value("Customer Site Details", parent, 'customer')
         data = frappe.db.sql(f""" SELECT name, is_new_site, site_owner_email, site_owner_name FROM `tabSite Details` WHERE site_name="{site}" and parent="{parent}" """, as_dict=True)
         if data:
-            email = data[0]['site_owner_email']
-            first_name = data[0]['site_owner_name']
-        
-            from datetime import datetime
-            today = datetime.now()
-            fy_start_date = f"{today.year}-01-01"
-            fy_end_date = f"{today.year}-12-31"
-            args = {
-                "language": "Español (Colombia)",
-                "country": "Panamá",
-                "timezone": "America/Panama",
-                "currency": "USD",
-                "company_name": company,
-                "company_abbr": get_abbr(company),
-                "chart_of_accounts": "Standard with Numbers",
-                "fy_start_date": f"{fy_start_date}",
-                "fy_end_date": f"{fy_end_date}",
-                "setup_demo": 0
-            }
-            
-            url = f"https://{site_name}/api/method/nextpty_customization.apis.auto_setup.custom_setup_complete?args={json.dumps(args)}&email={email}&first_name={first_name}"
-            print("\n\n url", url)
-            res = requests.post(url=url)
-            frappe.log_error("Auto creaton", f"code: {res.status_code}\ntext: {res.text}")
-            
             if data[0]['is_new_site']:
+                email = data[0]['site_owner_email']
+                first_name = data[0]['site_owner_name']
+                from datetime import datetime
+                today = datetime.now()
+                fy_start_date = f"{today.year}-01-01"
+                fy_end_date = f"{today.year}-12-31"
+                args = {
+                    "language": "Español (Colombia)",
+                    "country": "Panamá",
+                    "timezone": "America/Panama",
+                    "currency": "USD",
+                    "company_name": company,
+                    "company_abbr": get_abbr(company),
+                    "chart_of_accounts": "Standard with Numbers",
+                    "fy_start_date": f"{fy_start_date}",
+                    "fy_end_date": f"{fy_end_date}",
+                    "setup_demo": 0
+                }
+                
+                url = f"https://{site_name}/api/method/nextpty_customization.apis.auto_setup.custom_setup_complete?args={json.dumps(args)}&email={email}&first_name={first_name}"
+                res = requests.post(url=url)
+                frappe.log_error("Auto creaton", f"code: {res.status_code}\ntext: {res.text}")
+                
                 frappe.db.sql(f""" UPDATE `tabSite Details` SET is_new_site=0 WHERE name="{data[0]['name']}" """)
                 frappe.db.commit()
-                set_site_active_email(site)
                 
-            
+                create_dns_record_and_add_domain(site, parent)
+                send_site_active_email(site, parent, res)
+
+
     except Exception as e:
         frappe.log_error("Error: While auto setup new site", f"Error: {e}\nsite: {site}\nparent: {parent}")
 
 
-def set_site_active_email(site):
+def send_site_active_email(site, parent, res):
     """ add email configuration to send email after site active """
-    pass 
+    frappe.log_error("Email send", f"site: {site}\nparent: {parent}\nres: {res}")
+    pass
