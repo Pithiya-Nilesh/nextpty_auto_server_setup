@@ -1,0 +1,60 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2024-12-13 13:28:18.010442",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "hosted_zone_id",
+  "aws_access_key_id",
+  "aws_secret_access_key",
+  "default_region"
+ ],
+ "fields": [
+  {
+   "fieldname": "aws_access_key_id",
+   "fieldtype": "Password",
+   "label": "AWS Access Key ID"
+  },
+  {
+   "fieldname": "aws_secret_access_key",
+   "fieldtype": "Password",
+   "label": "AWS Secret Access Key"
+  },
+  {
+   "default": "us-east-1",
+   "fieldname": "default_region",
+   "fieldtype": "Data",
+   "label": "Default Region"
+  },
+  {
+   "default": "Z09235021TNCHQV5N82S5",
+   "fieldname": "hosted_zone_id",
+   "fieldtype": "Data",
+   "label": "Hosted Zone ID"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2024-12-13 13:33:13.958299",
+ "modified_by": "Administrator",
+ "module": "Nextpty Auto Server Setup",
+ "name": "Route53 Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

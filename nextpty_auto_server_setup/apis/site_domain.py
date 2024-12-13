@@ -3,8 +3,17 @@ from nextpty_auto_server_setup.apis.site import set_frappe_cloud_logs
 import frappe, json, requests
 
 import boto3
-client = boto3.client('route53', region_name='us-east-1')
-HOSTED_ZONE_ID = 'Z09235021TNCHQV5N82S5'
+aws_settings = frappe.get_doc("Route53 Settings", "Route53 Settings")
+HOSTED_ZONE_ID = aws_settings.hosted_zone_id
+aws_access_key_id = get_decrypted_password("Route53 Settings", "Route53 Settings", 'aws_access_key_id', raise_exception=False)
+secret_access_key = get_decrypted_password("Route53 Settings", "Route53 Settings", 'aws_secret_access_key', raise_exception=False)
+
+client = boto3.client(
+    'route53',
+    aws_access_key_id = aws_access_key_id,
+    aws_secret_access_key = secret_access_key,
+    region_name = aws_settings.default_region
+)
 
 @frappe.whitelist()
 def create_dns_record_and_add_domain(site, parent=""):
@@ -116,7 +125,7 @@ def create_dns_record(record_type, name, value, ttl=300):
             'ChangeInfo': 
             {
                 'Status': 'EXIST',
-                'Comment': f'{name} : is already exist try another one.'
+                'Comment': f'site "{name}" is already exist try another one.'
             }
         }
         
