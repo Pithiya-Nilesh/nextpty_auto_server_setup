@@ -8,12 +8,21 @@ HOSTED_ZONE_ID = aws_settings.hosted_zone_id
 aws_access_key_id = get_decrypted_password("Route53 Settings", "Route53 Settings", 'aws_access_key_id', raise_exception=False)
 secret_access_key = get_decrypted_password("Route53 Settings", "Route53 Settings", 'aws_secret_access_key', raise_exception=False)
 
-client = boto3.client(
-    'route53',
-    aws_access_key_id = aws_access_key_id,
-    aws_secret_access_key = secret_access_key,
-    region_name = aws_settings.default_region
+# client = boto3.client(
+#     'route53',
+#     aws_access_key_id = aws_access_key_id,
+#     aws_secret_access_key = secret_access_key,
+#     region_name = aws_settings.default_region
+# )
+
+session = boto3.Session(
+    aws_access_key_id=aws_access_key_id,
+    aws_secret_access_key=secret_access_key,
+    region_name=aws_settings.default_region
 )
+
+client = session.client('route53')
+
 
 @frappe.whitelist()
 def create_dns_record_and_add_domain(site, parent=""):
