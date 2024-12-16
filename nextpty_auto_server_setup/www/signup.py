@@ -22,8 +22,7 @@ def signup(formdata):
             if subscription:
                 if create_site_record(data['site_name'], subscription):
                     if create_customer_site_details_record(data, customer):
-                        frappe.msgprint(title=frappe._('Success'), msg=frappe._("Your site creation is in progress..."))
-
+                        frappe.msgprint(title=frappe._('Your site creation is in progress...'), msg=frappe._(f"Soon, we will share the credentials and the URL of your site with you via email at {data['contact_email']}."))
 
 @frappe.whitelist()
 def site_exist(site_name):
@@ -86,14 +85,23 @@ def create_customer(data, user):
         frappe.throw(msg=e, title=frappe._("Somthing Want wrong"))
 
 
-def create_subscription(data, customer, plan="Trial"):
+def create_subscription(data, customer, plan="Trial", is_trial=1, subscription_type="monthly"):
     try:
         doc = frappe.new_doc("Subscription")
         doc.party_type = "Customer"
         doc.party = customer
-        doc.trial_period_start = datetime.today().strftime('%Y-%m-%d')
-        trial_period_end_date = datetime.today() + timedelta(days=60)
-        doc.trial_period_end = trial_period_end_date.strftime('%Y-%m-%d')
+        if is_trial:
+            doc.trial_period_start = datetime.today().strftime('%Y-%m-%d')
+            trial_period_end_date = datetime.today() + timedelta(days=60)
+            doc.trial_period_end = trial_period_end_date.strftime('%Y-%m-%d')
+        else:
+            doc.start_date = datetime.today().strftime('%Y-%m-%d')
+            if subscription_type == "monthly":
+                doc.end_date = datetime.today() + timedelta(days=30)
+            elif subscription_type == "yearly":
+                doc.end_date = datetime.today() + timedelta(days=365)
+
+            
         doc.append('plans', {
             'plan': plan,
             'qty': 1

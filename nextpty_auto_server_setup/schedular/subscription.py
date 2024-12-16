@@ -3,6 +3,9 @@ import frappe
 from frappe.utils import today
 from datetime import datetime
 
+from nextpty_auto_server_setup.apis.site import activate_site
+from nextpty_auto_server_setup.www.signup import create_subscription
+
 
 @frappe.whitelist()
 def check_and_deactivate_expired_subscription_sites():
@@ -108,7 +111,44 @@ def deactivate_trial_subscription_end_sites(trial_subscription_end_sites):
             return deactivate_site(site_name)
 
 
-
 @frappe.whitelist()
-def re_new_subscription(site):
-    pass
+def re_new_subscription(site, subscription_type, plan, is_trial=0):
+    try:
+        SUBSCRIPTION_TYPES = ["monthly", "yearly"]
+        if not subscription_type in SUBSCRIPTION_TYPES:
+            return frappe.throw("Invalid Subscription Type", msg="Subscription type must be monthly or yearly.")
+        
+        sql = """
+            SELECT p.customer 
+            FROM `tabCustomer Site Details` AS p
+            INNER JOIN `tabSite Details` AS c 
+            ON c.parent = p.name
+            WHERE c.site_name = %s
+        """
+        customer = frappe.db.sql(sql, (site,), as_dict=True)
+        if customer:
+            if 'customer' in customer[0]:
+                customer = customer[0]['customer']
+                subscription = create_subscription("re-active subscription", customer, plan, is_trial, subscription_type)
+                if subscription:
+                    doc = frappe.get_doc("Site", site)
+                    for i in doc.site_subscription:
+                        i.is_active = 0
+                    doc.save(ignore_permissions=True)
+                    doc.append('site_subscription', {
+                        'subscription': subscription,
+                        'is_trial': is_trial,
+                        'is_active': 1
+                    })
+                    doc.save(ignore_permissions=True)
+                    frappe.db.commit()
+                    return activate_site(site)
+            else:
+                return frappe.throw("Customer Not Found", msg="Customer not found for this site.")
+        else:
+            return frappe.throw("Customer Not Found", msg="Customer not found for this site.")
+
+            
+    except Exception as e:
+        frappe.log_error("Error: While re new subscription for site.", f"Error: {e}\nsite: {site}\nsubceription_type: {subscription_type}\nplan: {plan}\nis_trial: {is_trial}")
+
