@@ -133,7 +133,7 @@ def check_dns(domain, site_name):
 
 
 def create_dns_record(record_type, name, value, HOSTED_ZONE_ID, client, ttl=300):
-    if record_exists(name, record_type):
+    if record_exists(name, record_type, HOSTED_ZONE_ID, client):
         return {
             'ResponseMetadata': {
                 'HTTPStatusCode': 200,
@@ -165,7 +165,7 @@ def create_dns_record(record_type, name, value, HOSTED_ZONE_ID, client, ttl=300)
         )
         return response
 
-def record_exists(name, record_type):
+def record_exists(name, record_type, HOSTED_ZONE_ID, client):
     try:
         response = client.list_resource_record_sets(
             HostedZoneId=HOSTED_ZONE_ID,
