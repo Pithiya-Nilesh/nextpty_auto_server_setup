@@ -190,6 +190,13 @@ def serialize_response(response):
 
 @frappe.whitelist()
 def add_domain(site_name, domain, site):
+    if add_domain_in_frappe_cloud(site_name, domain, site):
+        return set_domain_to_primary(site_name, domain, site)
+    # redirect_domain_to_primary(site_name, domain, site)
+
+    
+@frappe.whitelist()
+def add_domain_in_frappe_cloud(site_name, domain, site):
     try:       
         frappe_credentials = frappe.get_single("Frappe Cloud Credentials")
         
@@ -215,8 +222,78 @@ def add_domain(site_name, domain, site):
             response = response.text
             
         set_frappe_cloud_logs(status, site, data, response, "Add Domain")
+        return True if status=="Success" else False
         
     except Exception as e:
         frappe.log_error("Error: While Adding Domain For a Site In Frappe Cloud", f"Error: {e}\nsite_name: {site_name}\ndomain: {domain}")
+        return False
 
 
+@frappe.whitelist()
+def set_domain_to_primary(site_name, domain, site):
+    try:
+        frappe_credentials = frappe.get_single("Frappe Cloud Credentials")
+        
+        url = f"{frappe_credentials.url}/api/method/press.api.client.run_doc_method"
+        
+        headers = {
+            "X-Press-Team": frappe_credentials.team,
+            "Authorization": f"""token {frappe_credentials.api_key}:{get_decrypted_password("Frappe Cloud Credentials", "Frappe Cloud Credentials", "api_secret")}"""
+        }
+        
+        payload = {
+            "dt": "Site",
+            "dn": f"{site_name}",
+            "method": "set_host_name",
+            "args": {
+                "domain": f"{domain}"
+            }
+        }
+
+        response = requests.post(url, json=payload, headers=headers)
+
+        if response.status_code == 200:
+            print("Response:", response.json())
+            return True
+        else:
+            print("Error:", response.status_code, response.text)
+            return False
+        
+    except Exception as e:
+        frappe.log_error("Error: While Set Primary Domain For a Site In Frappe Cloud", f"Error: {e}\nsite_name: {site_name}\ndomain: {domain}")
+        return False
+    
+
+# @frappe.whitelist()
+# def redirect_domain_to_primary(site_name, domain, site):
+#     try:
+#         frappe_credentials = frappe.get_single("Frappe Cloud Credentials")
+        
+#         url = f"{frappe_credentials.url}/api/method/press.api.client.run_doc_method"
+        
+#         headers = {
+#             "X-Press-Team": frappe_credentials.team,
+#             "Authorization": f"""token {frappe_credentials.api_key}:{get_decrypted_password("Frappe Cloud Credentials", "Frappe Cloud Credentials", "api_secret")}"""
+#         }
+        
+#         payload = {
+#             "dt": "Site",
+#             "dn": f"{site_name}",
+#             "method": "set_host_name",
+#             "args": {
+#                 "domain": f"{domain}"
+#             }
+#         }
+
+#         response = requests.post(url, json=payload, headers=headers)
+
+#         if response.status_code == 200:
+#             print("Response:", response.json())
+#             return True
+#         else:
+#             print("Error:", response.status_code, response.text)
+#             return False
+        
+#     except Exception as e:
+#         frappe.log_error("Error: While Redirect Domain to Primary For a Site In Frappe Cloud", f"Error: {e}\nsite_name: {site_name}\ndomain: {domain}")
+#         return False
