@@ -2,9 +2,14 @@ from time import sleep
 from frappe.utils.password import get_decrypted_password
 from nextpty_auto_server_setup.apis.site import set_frappe_cloud_logs
 import frappe, json, requests
+import boto3
 
-try:
-    import boto3
+
+@frappe.whitelist()
+def create_dns_record_and_add_domain(site, parent=""):
+    domain = f"{site}.nextpty.com"
+    site_name = f"{site}.frappe.cloud"
+    
     aws_settings = frappe.get_doc("Route53 Settings", "Route53 Settings")
     HOSTED_ZONE_ID = aws_settings.hosted_zone_id
     aws_access_key_id = get_decrypted_password("Route53 Settings", "Route53 Settings", 'aws_access_key_id', raise_exception=False)
@@ -26,19 +31,13 @@ try:
     )
 
     client = session.client('route53')
-except Exception as e:
-    frappe.log_error("Error: While create aws session", f"Error: {e}")
-
-
-@frappe.whitelist()
-def create_dns_record_and_add_domain(site, parent=""):
-    domain = f"{site}.nextpty.com"
-    site_name = f"{site}.frappe.cloud"
     
     cname_response = create_dns_record(
         record_type='CNAME',
         name= f"{domain}.",
-        value= f"{site_name}."
+        value= f"{site_name}.",
+        HOSTED_ZONE_ID=HOSTED_ZONE_ID,
+        client=client
     )
     print("\n\n type", type(cname_response))
     print("CNAME Record Response:", cname_response)
@@ -133,7 +132,7 @@ def check_dns(domain, site_name):
         frappe.log_error("Error: While Checking DNS For a Site In Frappe Cloud", f"Error: {e}\nsite_name: {site_name}\ndomain: {domain}")
 
 
-def create_dns_record(record_type, name, value, ttl=300):
+def create_dns_record(record_type, name, value, HOSTED_ZONE_ID, client, ttl=300):
     if record_exists(name, record_type):
         return {
             'ResponseMetadata': {
