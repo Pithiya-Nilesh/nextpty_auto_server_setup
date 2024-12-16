@@ -66,7 +66,7 @@ def configure_site_for_active_status(site, parent):
                 frappe.db.commit()
                 
                 create_dns_record_and_add_domain(site, parent)
-                send_site_active_email(site, parent, res.text)
+                send_site_active_email(site, parent, res)
 
 
     except Exception as e:
@@ -75,5 +75,8 @@ def configure_site_for_active_status(site, parent):
 
 def send_site_active_email(site, parent, res):
     """ add email configuration to send email after site active """
+    site = f"{site}.nextpty.com"
+    res = json.loads(res.text)
+    res['site'] = f"https://{site}"
     frappe.log_error("Email send", f"site: {site}\nparent: {parent}\nres: {res}")
     pass
