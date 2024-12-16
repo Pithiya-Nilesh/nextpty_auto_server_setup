@@ -191,7 +191,7 @@ def serialize_response(response):
 @frappe.whitelist()
 def add_domain(site_name, domain, site):
     if add_domain_in_frappe_cloud(site_name, domain, site):
-        return set_domain_to_primary(site_name, domain, site)
+        frappe.enqueue("nextpty_auto_server_setup.apis.site_domain.set_domain_to_primary", site_name=site_name, domain=domain, site=site)
     # redirect_domain_to_primary(site_name, domain, site)
 
     

@@ -66,7 +66,7 @@ def configure_site_for_active_status(site, parent):
                 frappe.db.commit()
                 
                 create_dns_record_and_add_domain(site, parent)
-                send_site_active_email(site, parent, res)
+                send_site_active_email(site, parent, res.text)
 
 
     except Exception as e:
