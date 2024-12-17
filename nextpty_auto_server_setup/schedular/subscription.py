@@ -10,11 +10,11 @@ from nextpty_auto_server_setup.www.signup import create_subscription
 @frappe.whitelist()
 def check_and_deactivate_expired_subscription_sites():
     try:
-        subscription_end_sites = []
-        trial_subscription_end_sites = []
+        # subscription_end_sites = []
+        # trial_subscription_end_sites = []
         
-        subscription_end_sites.append(get_subscription_end_sites())
-        trial_subscription_end_sites.append(get_trial_subscription_end_sites())
+        subscription_end_sites = (get_subscription_end_sites())
+        trial_subscription_end_sites = (get_trial_subscription_end_sites())
         
         deactivate_subscription_end_sites(subscription_end_sites)
         deactivate_trial_subscription_end_sites(trial_subscription_end_sites)
@@ -93,7 +93,7 @@ def get_trial_subscription_end_sites():
         except Exception as e:
             frappe.log_error("Error: While get trial end sites", f"Error: {e}\nentry: {entry}\nentry name: {entry.name}")
 
-    frappe.db.commit()  
+    frappe.db.commit()
     return site_names
 
 
