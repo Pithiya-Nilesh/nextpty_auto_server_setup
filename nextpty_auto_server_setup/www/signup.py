@@ -97,9 +97,9 @@ def create_subscription(data, customer, plan="Trial", is_trial=1, subscription_t
         else:
             doc.start_date = datetime.today().strftime('%Y-%m-%d')
             if subscription_type == "monthly":
-                doc.end_date = datetime.today() + timedelta(days=30)
+                doc.end_date = datetime.today() + timedelta(days=31)
             elif subscription_type == "yearly":
-                doc.end_date = datetime.today() + timedelta(days=365)
+                doc.end_date = datetime.today() + timedelta(days=366)
 
             
         doc.append('plans', {
@@ -111,7 +111,7 @@ def create_subscription(data, customer, plan="Trial", is_trial=1, subscription_t
         return doc.name
     
     except Exception as e:
-        frappe.log_error("Error: While Creating Subscription", f"Error: {e}\ndata: {data}\ncustomer: {customer}")
+        frappe.log_error("Error: While Creating Subscription", f"Error: {e}\ndata: {data}\ncustomer: {customer}\nplan: {plan}\nis_trial: {is_trial}\nsubscription_type: {subscription_type}")
         frappe.throw(msg=e, title=frappe._("Somthing Want Wrong!"))
         return False
 
