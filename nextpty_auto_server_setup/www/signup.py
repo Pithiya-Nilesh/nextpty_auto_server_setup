@@ -141,7 +141,7 @@ def create_site_record(site_name, subscription, is_trial=1, is_active=1):
 
 def create_customer_site_details_record(data, customer):
     try:
-        docname = frappe.db.get_value("Customer Site Details", {"customer": data['company_name']}, fieldname=['name'])
+        docname = frappe.db.get_value("Customer Site Details", {"customer": customer}, fieldname=['name'])
         if docname:
             doc = frappe.get_doc("Customer Site Details", docname)
         else:

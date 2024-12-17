@@ -113,6 +113,13 @@ def deactivate_trial_subscription_end_sites(trial_subscription_end_sites):
 
 @frappe.whitelist()
 def re_new_subscription(site, subscription_type, plan, is_trial=0):
+    """ re active site subscription 
+        params: 
+        site = sitename in frappe doc,
+        subscription_type = e.g. monthly, yearly etc.
+        plan = e.g. gold, platinum, trial etc.
+        is_trial = if this is a trial period or give any trial to customer using cupon code or etc.
+    """
     try:
         SUBSCRIPTION_TYPES = ["monthly", "yearly"]
         if not subscription_type in SUBSCRIPTION_TYPES:

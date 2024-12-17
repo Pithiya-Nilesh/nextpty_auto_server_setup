@@ -3,8 +3,6 @@ from frappe.utils.password import get_decrypted_password
 from nextpty_auto_server_setup.apis.site import set_frappe_cloud_logs
 import frappe, json, requests
 import boto3
-from frappe.utils import now_datetime
-from datetime import timedelta
 
 
 @frappe.whitelist()
@@ -63,7 +61,7 @@ def create_dns_record_and_add_domain(site, parent=""):
             cname_response = serialize_response(cname_response)
             set_frappe_cloud_logs("Success", site, data, cname_response, "Add CNAME Record")
             sleep(30)
-            frappe.enqueue("nextpty_auto_server_setup.apis.site_domain.add_domain", site_name=site_name, domain=domain, site=site, schedule_at=now_datetime() + timedelta(seconds=30))
+            frappe.enqueue("nextpty_auto_server_setup.apis.site_domain.add_domain", site_name=site_name, domain=domain, site=site)
             # add_domain(site_name, domain, site)
             return {"status": True, "response": cname_response}
 
@@ -193,7 +191,8 @@ def serialize_response(response):
 @frappe.whitelist()
 def add_domain(site_name, domain, site):
     if add_domain_in_frappe_cloud(site_name, domain, site):
-        frappe.enqueue("nextpty_auto_server_setup.apis.site_domain.set_domain_to_primary", site_name=site_name, domain=domain, site=site, schedule_at=now_datetime() + timedelta(seconds=30))
+        sleep(30)
+        frappe.enqueue("nextpty_auto_server_setup.apis.site_domain.set_domain_to_primary", site_name=site_name, domain=domain, site=site)
     # redirect_domain_to_primary(site_name, domain, site)
 
     
