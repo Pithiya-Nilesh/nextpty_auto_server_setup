@@ -166,4 +166,4 @@ def set_frappe_cloud_logs(status, site_name, request, response, type_of_api):
         log.save()
         frappe.db.commit()
     except Exception as e:
-        frappe.log_error("Error: While Set FC API Log", f"site name: {site_name}\nstatus: {status}\nresponse: {response}\nError: {e}")
+        frappe.log_error("Error: While Set FC API Log", f"site name: {site_name}\nstatus: {status}\nrequest: {request}\ntype_of_api: {type_of_api}\nresponse: {response}\nError: {e}")
