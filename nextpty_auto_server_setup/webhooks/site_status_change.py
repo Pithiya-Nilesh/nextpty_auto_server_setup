@@ -77,6 +77,6 @@ def send_site_active_email(site, parent, res):
     """ add email configuration to send email after site active """
     site = f"{site}.nextpty.com"
     res = json.loads(res.text)
-    res['site'] = f"https://{site}"
+    res['message']['site'] = f"https://{site}"
     frappe.log_error("Email send", f"site: {site}\nparent: {parent}\nres: {res}")
     pass
