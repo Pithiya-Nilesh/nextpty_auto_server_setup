@@ -88,9 +88,8 @@ def send_site_active_email(site, parent, res):
         email_subject = "Congratulations! Your New Site is Ready to Go"
         
         email_template = f"""
-            <p>Hello,</p>
-
-            <p>Your new website is ready! Below are the details for accessing your site:</p><br>
+        
+            <h3>Your new website is ready! Below are the details for accessing your site:</h3><br>
 
             <p>Site URL: {msg['site']} </p>
             <p>Username: {msg['user']}  </p>
