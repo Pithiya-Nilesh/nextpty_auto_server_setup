@@ -12,7 +12,7 @@
                     <div class="form-group row">
                         <label for="company_name" class="col-12 col-form-label">Company / Person Name</label>
                         <div class="col-12">
-                            <input type="text" class="form-control" id="company_name" name="company_name" placeholder="Enter Company / Person Name" >
+                            <input type="text" class="form-control" id="company_name" name="company_name" placeholder="Enter Company / Person Name" oninput="updateSiteName()">
                             <small id="company_name_error" class="form-text text-danger" style="display: none;"></small>
                         </div>
                     </div>
@@ -205,6 +205,12 @@
             }
             
         });
+
+        function updateSiteName() {
+            const companyNameInput = document.getElementById('company_name');
+            const siteNameInput = document.getElementById('site_name');
+            siteNameInput.value = companyNameInput.value.toLowerCase().replace(/\s+/g, '-');
+        }
     </script>
     
 {% endblock %}

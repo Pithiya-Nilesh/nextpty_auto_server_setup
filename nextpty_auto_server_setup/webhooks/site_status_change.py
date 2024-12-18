@@ -66,17 +66,43 @@ def configure_site_for_active_status(site, parent):
                 frappe.db.commit()
                 
                 create_dns_record_and_add_domain(site, parent)
-                send_site_active_email(site, parent, res)
+                send_site_active_email(site, parent, res.text)
 
 
     except Exception as e:
         frappe.log_error("Error: While auto setup new site", f"Error: {e}\nsite: {site}\nparent: {parent}")
 
 
+@frappe.whitelist()
 def send_site_active_email(site, parent, res):
     """ add email configuration to send email after site active """
-    site = f"{site}.nextpty.com"
-    res = json.loads(res.text)
-    res['message']['site'] = f"https://{site}"
-    frappe.log_error("Email send", f"site: {site}\nparent: {parent}\nres: {res}")
-    pass
+    try:
+        site_name = f"{site}.nextpty.com"
+        # res = {'message': {'user': 'nilesh@sanskartechnolab.com', 'password': 'ezI6UDmKPb', 'site': 'https://johntradinginc.frappe.cloud'}, 'site': 'https://johntradinginc.nextpty.com'}
+        res = json.loads(res)
+        res['message']['site'] = f"https://{site_name}"
+        
+        msg = res['message']
+        
+        # email_subject = "Welcome! Your Website is Live - Access Details Inside"
+        email_subject = "Congratulations! Your New Site is Ready to Go"
+        
+        email_template = f"""
+            <p>Hello,</p>
+
+            <p>Your new website is ready! Below are the details for accessing your site:</p><br>
+
+            <p>Site URL: {msg['site']} </p>
+            <p>Username: {msg['user']}  </p>
+            <p>Password: {msg['password']}  </p><br>
+
+            <p>Thank you for choosing NextPty. If you have any questions or need further assistance, please feel free to reach out to us.</p><br>
+
+            <p>Best regards,</p>
+            <p>The NextPty Team</p>
+        """
+        
+        frappe.sendmail(recipients=[f"{msg['user']}"], sender="soporte@nextpty.com", subject=email_subject, message=email_template, now=True)
+        frappe.log_error("Email send", f"site: {site_name}\nparent: {parent}\nres: {res}")
+    except Exception as e:
+        frappe.log_error("Error: While sending site creation email", f"Error: {e}\nparent: {parent}\nres: {res}")

@@ -101,7 +101,7 @@ def create_subscription(data, customer, plan="Trial", is_trial=1, subscription_t
             elif subscription_type == "yearly":
                 doc.end_date = datetime.today() + timedelta(days=366)
 
-            
+
         doc.append('plans', {
             'plan': plan,
             'qty': 1
