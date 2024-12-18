@@ -67,6 +67,7 @@ def activate_site(site_name):
         if response.status_code == 200:
             status = "Success"
             response = response.text
+            return True
         else:
             status = "Failed"
             response = response.text

@@ -121,10 +121,16 @@ def re_new_subscription(site, subscription_type, plan, is_trial=0):
         is_trial = if this is a trial period or give any trial to customer using cupon code or etc.
     """
     try:
+        is_trial = 1 if plan == "Trial" else 0
+        
         SUBSCRIPTION_TYPES = ["monthly", "yearly"]
         if not subscription_type in SUBSCRIPTION_TYPES:
-            return frappe.throw("Invalid Subscription Type", msg="Subscription type must be monthly or yearly.")
+            return frappe.throw("Invalid Subscription Type", "Subscription type must be monthly or yearly.")
         
+        site_name = frappe.db.get_value("Site", filters={"name": site}, fieldname=['name'])
+        if not site_name:
+            return frappe.throw("Site Not Found", "We not found any record of your site.")
+
         sql = """
             SELECT p.customer 
             FROM `tabCustomer Site Details` AS p
@@ -149,11 +155,14 @@ def re_new_subscription(site, subscription_type, plan, is_trial=0):
                     })
                     doc.save(ignore_permissions=True)
                     frappe.db.commit()
-                    return activate_site(site)
+                    active = activate_site(site)
+                    if active:
+                        frappe.msgprint(title= "Success", message= "Your Site Subscription is renewed", indicator= "green")
+                        
             else:
-                return frappe.throw("Customer Not Found", msg="Customer not found for this site.")
+                return frappe.throw("Customer Not Found", "Customer not found for this site.")
         else:
-            return frappe.throw("Customer Not Found", msg="Customer not found for this site.")
+            return frappe.throw("Customer Not Found", "Customer not found for this site.")
 
             
     except Exception as e:

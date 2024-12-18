@@ -62,13 +62,15 @@ def create_user(data):
 
 def create_customer(data, user):
     try:       
-        docname = frappe.db.get_value("Customer", {"customer_name": data['company_name']}, fieldname=['name'])
-        if docname:
-            doc = frappe.get_doc("Customer", docname)
-        else:
-            doc = frappe.new_doc("Customer")
-            doc.customer_name = data['company_name']
+        # docname = frappe.db.get_value("Customer", {"customer_name": data['company_name']}, fieldname=['name'])
+        # if docname:
+        #     doc = frappe.get_doc("Customer", docname)
+        # else:
+        #     doc = frappe.new_doc("Customer")
+        #     doc.customer_name = data['company_name']
         
+        doc = frappe.new_doc("Customer")
+        doc.customer_name = data['company_name']
         existing_portal_user = next((u for u in doc.portal_users if u.user == user), None)
         if not existing_portal_user:
             doc.append('portal_users', {
@@ -141,13 +143,15 @@ def create_site_record(site_name, subscription, is_trial=1, is_active=1):
 
 def create_customer_site_details_record(data, customer):
     try:
-        docname = frappe.db.get_value("Customer Site Details", {"customer": customer}, fieldname=['name'])
-        if docname:
-            doc = frappe.get_doc("Customer Site Details", docname)
-        else:
-            doc = frappe.new_doc("Customer Site Details")
-            doc.customer = customer
+        # docname = frappe.db.get_value("Customer Site Details", {"customer": customer}, fieldname=['name'])
+        # if docname:
+        #     doc = frappe.get_doc("Customer Site Details", docname)
+        # else:
+        #     doc = frappe.new_doc("Customer Site Details")
+        #     doc.customer = customer
         
+        doc = frappe.new_doc("Customer Site Details")
+        doc.customer = customer
         
         existing_contact = next((contact for contact in doc.contact_details if contact.contact_email == data['contact_email']), None)
 
