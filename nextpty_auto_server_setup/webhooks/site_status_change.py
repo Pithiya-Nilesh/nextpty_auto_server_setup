@@ -35,7 +35,8 @@ def site_status_change(payload):
 def configure_site_for_active_status(site, parent):
     try:
         site_name = f"{site}.frappe.cloud"
-        company = frappe.db.get_value("Customer Site Details", parent, 'customer')
+        co = frappe.db.get_value("Customer Site Details", parent, 'customer')
+        company = frappe.db.get_value("Customer", co, 'customer_name')
         data = frappe.db.sql(f""" SELECT name, is_new_site, site_owner_email, site_owner_name FROM `tabSite Details` WHERE site_name="{site}" and parent="{parent}" """, as_dict=True)
         if data:
             if data[0]['is_new_site']:
