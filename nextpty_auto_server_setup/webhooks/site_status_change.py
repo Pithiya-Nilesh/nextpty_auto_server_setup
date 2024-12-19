@@ -65,8 +65,10 @@ def configure_site_for_active_status(site, parent):
                 frappe.db.sql(f""" UPDATE `tabSite Details` SET is_new_site=0 WHERE name="{data[0]['name']}" """)
                 frappe.db.commit()
                 
-                create_dns_record_and_add_domain(site, parent)
-                send_site_active_email(site, parent, res.text)
+                res = json.loads(res.text)
+                if not res['message']['status'] == "already setup":
+                    create_dns_record_and_add_domain(site, parent)
+                    send_site_active_email(site, parent, res)
 
 
     except Exception as e:
@@ -79,26 +81,25 @@ def send_site_active_email(site, parent, res):
     try:
         site_name = f"{site}.nextpty.com"
         # res = {'message': {'user': 'nilesh@sanskartechnolab.com', 'password': 'ezI6UDmKPb', 'site': 'https://johntradinginc.frappe.cloud'}, 'site': 'https://johntradinginc.nextpty.com'}
-        res = json.loads(res)
+        # res = json.loads(res)
         res['message']['site'] = f"https://{site_name}"
         
         msg = res['message']
         
         # email_subject = "Welcome! Your Website is Live - Access Details Inside"
-        email_subject = "Congratulations! Your New Site is Ready to Go"
+        email_subject = f"Tu sitio de trabajo {site_name} ha sido creado"
         
         email_template = f"""
-        
-            <h3>Your new website is ready! Below are the details for accessing your site:</h3><br>
+            <h3>Tu sitio de trabajo {site_name} ha sido creado. Abajo los detalles para acceder:</h3><br>
 
-            <p>Site URL: {msg['site']} </p>
-            <p>Username: {msg['user']}  </p>
+            <p>URL: {msg['site']} </p>
+            <p>Usuario: {msg['user']}  </p>
             <p>Password: {msg['password']}  </p><br>
 
-            <p>Thank you for choosing NextPty. If you have any questions or need further assistance, please feel free to reach out to us.</p><br>
-
-            <p>Best regards,</p>
-            <p>The NextPty Team</p>
+            <p>Gracias por elegir NextPTY y darnos la oportunidad de demostrarte porqué ERP Next localizado por nosotros es la mejor opción para tu negocio.</p><br>
+            <p>Cualquier duda que tengas, puedes contactarnos a soporte@nextpty.com</p><br>
+            <p>Atentamente,</p>
+            <p>NextPTY</p>
         """
         
         frappe.sendmail(recipients=[f"{msg['user']}"], sender="soporte@nextpty.com", subject=email_subject, message=email_template, now=True)

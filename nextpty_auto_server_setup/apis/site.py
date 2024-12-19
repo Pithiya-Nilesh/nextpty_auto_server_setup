@@ -138,6 +138,33 @@ def drop_site(site_name):
     except Exception as e:
         frappe.log_error("Error: While Deactivate Site In Frappe Cloud", f"Error: {e}\nsite_name: {site_name}")
   
+  
+@frappe.whitelist()
+def check_site_status(site): 
+    response = "" 
+    try:
+        frappe_credentials = frappe.get_single("Frappe Cloud Credentials")
+        
+        url = f"{frappe_credentials.url}/api/method/press.api.site.get"
+        
+        headers = {
+            "X-Press-Team": frappe_credentials.team,
+            "Authorization": f"""token {frappe_credentials.api_key}:{get_decrypted_password("Frappe Cloud Credentials", "Frappe Cloud Credentials", "api_secret")}"""
+        }
+        
+        data = {
+            "name": f"{site}.frappe.cloud"
+        }
+
+        response = requests.post(url, headers=headers, json=data)
+        if response.status_code == 200:
+            response = json.loads(response.text)
+            return response['message']['status']
+        else:
+            response = response.text
+                    
+    except Exception as e:
+        frappe.log_error("Error: While Check Site Status In Frappe Cloud", f"Error: {e}\nsite_name: {site}\nresponse: {response}")
         
 @frappe.whitelist()
 def update_site_status(row_name, status, action):

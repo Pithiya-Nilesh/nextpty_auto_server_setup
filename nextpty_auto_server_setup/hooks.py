@@ -164,6 +164,11 @@ scheduler_events = {
 	# "monthly": [
 	# 	"nextpty_auto_server_setup.tasks.monthly"
 	# ],
+	"cron": {
+		"*/5 * * * *": [
+			"nextpty_auto_server_setup.schedular.check_new_site_status.check_new_site_status"
+		]
+	}
 }
 
 # Testing
