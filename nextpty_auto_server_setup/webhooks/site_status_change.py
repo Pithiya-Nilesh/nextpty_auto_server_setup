@@ -66,10 +66,9 @@ def configure_site_for_active_status(site, parent):
                 frappe.db.commit()
                 
                 res = json.loads(res.text)
-                if not res['message']['status'] == "already setup":
+                if res['message'].get('status') != "already setup":
                     create_dns_record_and_add_domain(site, parent)
                     send_site_active_email(site, parent, res)
-
 
     except Exception as e:
         frappe.log_error("Error: While auto setup new site", f"Error: {e}\nsite: {site}\nparent: {parent}")
