@@ -5,6 +5,7 @@ from nextpty_auto_server_setup.apis.site import check_site_status
 
 @frappe.whitelist()
 def check_new_site_status():
+    return
     sql = f""" 
         SELECT parent, site_name FROM `tabSite Details` WHERE is_new_site=1
     """

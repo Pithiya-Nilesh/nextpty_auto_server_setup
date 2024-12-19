@@ -39,6 +39,7 @@ def configure_site_for_active_status(site, parent):
         data = frappe.db.sql(f""" SELECT name, is_new_site, site_owner_email, site_owner_name FROM `tabSite Details` WHERE site_name="{site}" and parent="{parent}" """, as_dict=True)
         if data:
             if data[0]['is_new_site']:
+                        
                 email = data[0]['site_owner_email']
                 first_name = data[0]['site_owner_name']
                 from datetime import datetime
@@ -60,7 +61,7 @@ def configure_site_for_active_status(site, parent):
                 
                 url = f"https://{site_name}/api/method/nextpty_customization.apis.auto_setup.custom_setup_complete?args={json.dumps(args)}&email={email}&first_name={first_name}"
                 res = requests.post(url=url)
-                frappe.log_error("Auto creaton", f"code: {res.status_code}\ntext: {res.text}")
+                frappe.log_error("Auto creation", f"code: {res.status_code}\ntext: {res.text}")
                 
                 frappe.db.sql(f""" UPDATE `tabSite Details` SET is_new_site=0 WHERE name="{data[0]['name']}" """)
                 frappe.db.commit()
