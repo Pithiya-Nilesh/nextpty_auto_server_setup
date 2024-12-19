@@ -39,7 +39,20 @@ def configure_site_for_active_status(site, parent):
         data = frappe.db.sql(f""" SELECT name, is_new_site, site_owner_email, site_owner_name FROM `tabSite Details` WHERE site_name="{site}" and parent="{parent}" """, as_dict=True)
         if data:
             if data[0]['is_new_site']:
-                        
+                
+                status_exist = frappe.db.get_value("Site Auto Setup Status", filters={"name": site}, fieldname=['name'])
+                if status_exist:
+                    s_status = frappe.db.ge_value("Site Auto Setup Status", filters={"name": site}, fieldname=['status'])
+                    if s_status in ["In Progress", "Completed"]:
+                        return
+                
+                else:
+                    site_status = frappe.new_doc("Site Auto Setup Status")
+                    site_status.site_name = site
+                    site_status.status = "In Progress"
+                    site_status.insert(ignore_permissions=True)
+                    frappe.db.commit()
+                    
                 email = data[0]['site_owner_email']
                 first_name = data[0]['site_owner_name']
                 from datetime import datetime
@@ -70,6 +83,10 @@ def configure_site_for_active_status(site, parent):
                 if res['message'].get('status') != "already setup":
                     create_dns_record_and_add_domain(site, parent)
                     send_site_active_email(site, parent, res)
+                    site_status = frappe.get_doc("Site Auto Setup Status", site)
+                    site_status.status = "Completed"
+                    site_status.save(ignore_permissions=True)
+                    frappe.db.commit()
 
     except Exception as e:
         frappe.log_error("Error: While auto setup new site", f"Error: {e}\nsite: {site}\nparent: {parent}")
