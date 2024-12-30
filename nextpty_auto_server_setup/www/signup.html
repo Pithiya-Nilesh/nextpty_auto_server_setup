@@ -182,7 +182,7 @@
                         contact_name: document.getElementById('contact_name').value,
                         contact_email: document.getElementById('contact_email').value,
                         site_name: document.getElementById('site_name').value,
-                        recaptcha_response: document.getElementById('recaptcha_response').value
+                        recaptcha_response: grecaptcha.getResponse()
                     };
 
                     frappe.call({
