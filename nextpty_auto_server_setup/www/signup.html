@@ -81,7 +81,7 @@
                       </div>
                     
                       
-                      
+
                     <div class="form-group row mt-10">
                         <div class="col-12">
                             <button type="submit" class="btn btn-primary w-100">Submit</button>
@@ -163,7 +163,7 @@
                 }
 
                 // Check reCAPTCHA response
-                var recaptchaResponse = document.getElementById('recaptcha_response').value;
+                var recaptchaResponse = grecaptcha.getResponse();
                 if (!recaptchaResponse) {
                     alert('Please verify that you are human.');
                     isValid = false;
