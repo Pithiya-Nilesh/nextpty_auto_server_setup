@@ -1,7 +1,17 @@
 {% extends "templates/base.html" %}
 {% block title %} Sign Up {% endblock %}
 {% block head_include %}
+<script type="text/javascript">
+  var onloadCallback = function() {
+    // This function will be called once reCAPTCHA is ready
+    grecaptcha.render('recaptcha', {
+      'sitekey' : '6LdGT6YqAAAAANsP_LYCcYC7_mCEX6tbkQHn6xGm'
+    });
+  };
+</script>
+<script src="https://www.google.com/recaptcha/api.js?onload=onloadCallback&render=explicit" async defer></script>
 {% endblock %}
+
 
 {% block content %}
     <div class="container my-10">
@@ -64,7 +74,13 @@
                           <small id="site_name_error" class="form-text text-danger" style="display: none;"></small>
                         </div>
                       </div>
+                    
+                      <div class="form-group row">
+                        <label for="recaptcha" class="col-12 col-form-label">Please verify you are human:</label>
+                        <div class="col-12" id="recaptcha"></div>
+                      </div>
                       
+                    
 
                     <div class="form-group row mt-10">
                         <div class="col-12">
