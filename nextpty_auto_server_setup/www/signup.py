@@ -7,11 +7,12 @@ import requests
 
 @frappe.whitelist(allow_guest=True)
 def signup(formdata):
-    recaptcha_response = formdata.get('recaptcha_response')
+    data = json.loads(formdata)
+
+    recaptcha_response = data["recaptcha_response"]
     if not verify_recaptcha(recaptcha_response):
         frappe.throw("reCAPTCHA verification failed. Please try again.")
 
-    data = json.loads(formdata)
     site_name = re.sub(r'[^a-zA-Z0-9-]', '', data["site_name"].lower().replace(" ", "-"))
     
     if len(site_name) < 5:
