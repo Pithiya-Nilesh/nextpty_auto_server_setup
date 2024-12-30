@@ -79,9 +79,9 @@
                         <label for="recaptcha" class="col-12 col-form-label">Please verify you are human:</label>
                         <div class="col-12" id="recaptcha"></div>
                       </div>
-                      
                     
-
+                      
+                      
                     <div class="form-group row mt-10">
                         <div class="col-12">
                             <button type="submit" class="btn btn-primary w-100">Submit</button>
@@ -162,6 +162,13 @@
                     isValid = false;
                 }
 
+                // Check reCAPTCHA response
+                var recaptchaResponse = document.getElementById('recaptcha_response').value;
+                if (!recaptchaResponse) {
+                    alert('Please verify that you are human.');
+                    isValid = false;
+                }
+
                 return isValid;
             }
 
@@ -174,7 +181,8 @@
                         company_name: document.getElementById('company_name').value,
                         contact_name: document.getElementById('contact_name').value,
                         contact_email: document.getElementById('contact_email').value,
-                        site_name: document.getElementById('site_name').value
+                        site_name: document.getElementById('site_name').value,
+                        recaptcha_response: document.getElementById('recaptcha_response').value
                     };
 
                     frappe.call({

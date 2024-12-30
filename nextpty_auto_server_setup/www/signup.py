@@ -1,10 +1,16 @@
 from datetime import datetime, timedelta
 import re
 import frappe, json
+import requests
+
 
 
 @frappe.whitelist(allow_guest=True)
 def signup(formdata):
+    recaptcha_response = formdata.get('recaptcha_response')
+    if not verify_recaptcha(recaptcha_response):
+        frappe.throw("reCAPTCHA verification failed. Please try again.")
+
     data = json.loads(formdata)
     site_name = re.sub(r'[^a-zA-Z0-9-]', '', data["site_name"].lower().replace(" ", "-"))
     
@@ -191,3 +197,14 @@ def get_logged_in_user_details(user=""):
         return data
     except Exception as e:
         frappe.log_error("Error: While get logged in user data", f"Error: {e}\nuser: {user}")
+
+
+def verify_recaptcha(recaptcha_response):
+    secret_key = "6LdGT6YqAAAAAAU9GUCEh-mml3yZ-38eZN9DOW" 
+    payload = {
+        'secret': secret_key,
+        'response': recaptcha_response
+    }
+    response = requests.post("https://www.google.com/recaptcha/api/siteverify", data=payload)
+    result = response.json()
+    return result.get('success', False)
