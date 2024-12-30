@@ -78,6 +78,16 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            var navbar = document.querySelector('.navbar');
+            if (navbar) {
+                navbar.style.display = 'none';
+            }
+
+            var footer = document.querySelector('.web-footer');
+            if (footer) {
+                footer.style.display = 'none';
+            }
+
             var logged_in_user = frappe.session.user
             //  || logged_in_user !== 'Administrator'
             if (logged_in_user !== 'Administrator'){
@@ -211,6 +221,7 @@
             const siteNameInput = document.getElementById('site_name');
             siteNameInput.value = companyNameInput.value.toLowerCase().replace(/\s+/g, '-');
         }
+                    
     </script>
-    
+
 {% endblock %}

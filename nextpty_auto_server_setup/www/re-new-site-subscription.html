@@ -51,6 +51,17 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        var navbar = document.querySelector('.navbar');
+            if (navbar) {
+                navbar.style.display = 'none';
+            }
+
+            var footer = document.querySelector('.web-footer');
+            if (footer) {
+                footer.style.display = 'none';
+            }
+
+            
         const signupForm = document.getElementById('signupForm');
 
         function validateForm() {
