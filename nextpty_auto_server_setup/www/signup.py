@@ -201,7 +201,7 @@ def get_logged_in_user_details(user=""):
 
 
 def verify_recaptcha(recaptcha_response):
-    secret_key = "6LdGT6YqAAAAAAU9GUCEh-mml3yZ-38eZN9DOW" 
+    secret_key = "6LdoVaoqAAAAALsVfGMBG1DbdAVi1TORvU27yNLv" 
     payload = {
         'secret': secret_key,
         'response': recaptcha_response
