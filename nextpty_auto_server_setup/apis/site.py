@@ -195,3 +195,70 @@ def set_frappe_cloud_logs(status, site_name, request, response, type_of_api):
         frappe.db.commit()
     except Exception as e:
         frappe.log_error("Error: While Set FC API Log", f"site name: {site_name}\nstatus: {status}\nrequest: {request}\ntype_of_api: {type_of_api}\nresponse: {response}\nError: {e}")
+
+
+@frappe.whitelist()
+def get_site_data():
+    session_user = frappe.session.user
+
+    customers = frappe.get_all("Portal User",filters={"user":session_user,"parenttype":"Customer"},fields=["parent"])
+    print("\n\nSession User",session_user)
+
+    session_user_sites_details = []
+    for customer in customers:
+        customer_name = customer["parent"]
+        customer_site_details = frappe.get_all("Customer Site Details",filters={"customer":customer_name},fields=["name"])
+        for site_detail in customer_site_details:
+            session_user_sites_details.append(site_detail["name"])
+
+    site_info = [] 
+
+    for session_user_site in session_user_sites_details:
+        site_details = frappe.get_all("Site Details",filters={"parent":session_user_site,"parenttype":"Customer Site Details"},fields=["site_name","status"])
+
+        for site in site_details:
+            site_name = site["site_name"]
+            status = site["status"]
+
+            site_data = frappe.get_all("Site Subscription",filters={"parent":site_name,"parenttype":"Site"},fields=["subscription","is_active","is_trial","creation"])
+            
+            subscription = None  
+            subscription_end_date = None
+
+            for subscription_data in site_data:
+                if subscription_data["is_active"] == 1:
+                    subscription = "Active"
+
+                    subscription_record = frappe.db.get_value("Subscription", subscription_data["subscription"], ["trial_period_end", "end_date"], as_dict=True)
+                    if subscription_record:
+                        if subscription_data["is_trial"]==1:
+                            subscription_end_date = subscription_record["trial_period_end"]
+                        else:
+                            subscription_end_date = subscription_record["end_date"]
+
+                    break
+            if not subscription:
+                subscription = "Expired"
+                if site_data:
+                    last_subscription_data = sorted(site_data, key=lambda x: x["creation"], reverse=True)[0]
+
+                    subscription_record = frappe.db.get_value(
+                                "Subscription",
+                                last_subscription_data["subscription"],
+                                ["end_date","trial_period_end"],
+                                as_dict=True
+                            )       
+                    if subscription_record:             
+                        if subscription_data["is_trial"]==1:
+                            subscription_end_date = subscription_record["trial_period_end"]
+                        else:
+                            subscription_end_date = subscription_record["end_date"]
+
+            site_info.append({
+                "site_name": site_name,
+                "status": status,
+                "subscription": subscription,
+                "expiry_date": subscription_end_date.strftime('%d-%m-%Y') if subscription_end_date else None
+            })
+    print(site_info)
+    return site_info

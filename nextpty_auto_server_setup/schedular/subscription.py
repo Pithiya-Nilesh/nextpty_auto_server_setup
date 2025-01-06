@@ -1,7 +1,7 @@
 
 import frappe
 from frappe.utils import today
-from datetime import datetime
+from datetime import datetime,timedelta
 
 from nextpty_auto_server_setup.apis.site import activate_site
 from nextpty_auto_server_setup.www.signup import create_subscription
@@ -168,3 +168,93 @@ def re_new_subscription(site, subscription_type, plan, is_trial=0):
     except Exception as e:
         frappe.log_error("Error: While re new subscription for site.", f"Error: {e}\nsite: {site}\nsubceription_type: {subscription_type}\nplan: {plan}\nis_trial: {is_trial}")
 
+
+@frappe.whitelist()
+def check_and_send_mail_for_expiring_subscription():
+    print()
+    from datetime import datetime, timedelta
+    import pdb
+    pdb.set_trace()
+
+    subscriptions = frappe.get_all("Subscription", fields=["name","status", "party", "end_date","trial_period_end"])
+    today_date = datetime.today().date()
+
+    for subscription in subscriptions:
+        try:
+            if subscription.get("status") == "Trialling":
+                end_date = subscription.get("trial_period_end")
+            else:
+                end_date = subscription.get("end_date")
+
+            if not end_date:
+                frappe.log_error(
+                    f"Subscription {subscription.get('name')} has no valid end date.",
+                    "Missing end date in Subscription"
+                )
+                continue
+
+            if isinstance(end_date, str):
+                end_date = datetime.strptime(end_date, "%Y-%m-%d").date()
+
+            if today_date <= end_date <= (today_date + timedelta(days=3)):
+                site_details = frappe.get_all(
+                    "Site Subscription",  
+                    filters={"subscription": subscription.get("name")},
+                    fields=["parent"]
+                )
+
+                for site in site_details:
+                    site_data = frappe.get_all(
+                        "Site Details", 
+                        filters={"site_name": site.get("parent")},
+                        fields=["parent", "site_owner_email","site_name"]
+                    )
+
+                    for detail in site_data:
+
+                            subject = f"Subscription Expiring Soon: {subscription.get('name')}"
+                            message = f"""
+                                <p>Dear,</p>
+                                <p>Your subscription <b>{subscription.get('name')}</b> for site {detail.get("site_name")} is set to expire soon.</p>
+                                <p>Please renew your subscription to avoid service interruption.</p>
+                                <p>Thank you,</p>
+                                <p>Your Team</p>
+                            """
+                            print("\n\nAre we sending mail???")
+                            frappe.sendmail(
+                                recipients=[detail.get("site_owner_email")],
+                                subject=subject,
+                                message=message
+                            )
+
+        except Exception as e:
+            # Log errors with detailed context
+            frappe.log_error(
+                f"Error while processing subscription: {subscription.get('name')}",
+                f"Exception: {str(e)}\nSubscription Data: {subscription}"
+            )
+
+
+
+
+
+
+                # email_addresses = frappe.get_all("Portal User",filters={'parent':entry.get("party")},fields=["email"])
+
+                # recipients = [user.get("email") for user in email_addresses if user.get("email")]
+
+                # if recipients:
+                #     subject=f"Subscription Expiring Soon:{entry.get('name')}"
+                #     message=f"""
+                #         <p>Dear {entry.get('party')},</p>
+                #         <p>Your subscription <b>{entry.get('name')}</b> is set to expire on <b>{end_date}</b>.</p>
+                #         <p>Please renew your subscription to avoid service interruption.</p>
+                #         <p>Thank you,</p>
+                #         <p>Your Team</p>
+                #     """
+
+                #     frappe.sendmail(
+                #         recipients=recipients,
+                #         subject=subject,
+                #         message=message
+                #     )

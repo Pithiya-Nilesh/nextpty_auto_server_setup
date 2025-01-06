@@ -3,6 +3,49 @@
 {% block title %}Dashboard{% endblock %}
 
 {% block head_include %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+
+<style>
+    th{
+        background-color: #f3f3f3 !important;
+    }
+    #sitesTable {
+    width: 82%; /* Reduced width of the table */
+    margin: 0 auto; /* Center the table */
+    border-collapse: collapse;
+    margin-top: 40px;
+}
+.container{
+    min-width: -webkit-fill-available;
+}
+.subscription-label {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 14px;
+    font-weight: bold;
+    text-align: center;
+    width: auto;
+}
+
+.label-active {
+    background-color: #d4f9e7; 
+    color: #1d9440; 
+    border: 1px solid #1d9440;
+}
+
+.label-inactive {
+    background-color: #f3f3f3;
+    color: #9c9c9c; 
+    border: 1px solid #dcdcdc;
+}
+.list-group-item.active {
+    background-color: #2f7bcc; /* Light blue */
+    color: white;
+    border:None;
+}
+
+</style>
 {% endblock %}
 
 {% block content %}
@@ -10,25 +53,26 @@
 <div class="container-fluid">
     <div class="row" style="height:100vh">
         <!-- Sidebar (Adjustable width on small screens) -->
-        <div class="col-md-3 col-lg-2 p-0 sidebar bg-dark">
+        <div class="col-md-3 col-lg-2 p-0 sidebar bg-light">
             <div class="list-group">
-                <a href="#allSites" class="list-group-item list-group-item-action" id="allSitesLink">My All Sites</a>
-                <a href="#createNewSite" class="list-group-item list-group-item-action" id="createNewSiteLink">Create New Site</a>
+                <a href="#allSites" class="list-group-item list-group-item-action" id="allSitesLink" style="border-radius: 0 !important;"><i class="fa fa-globe" style="margin-right: 10px;"></i>My All Sites</a>
+                <a href="#createNewSite" class="list-group-item list-group-item-action" id="createNewSiteLink" style="border-radius: 0 !important;"><i class="fa fa-plus-circle" style="margin-right: 10px;"></i>Create New Site</a>
+                <a href="#renewsitesubscription" class="list-group-item list-group-item-action" id="renewSiteSubscription" style="border-radius: 0 !important;"><i class="fa fa-sync-alt" style="margin-right: 10px;"></i>Renew Site Subscription</a>
             </div>
         </div>
 
         <!-- Main Content -->
         <div class="col-md-9 col-lg-10 content" style="height: 100vh;">
-            <h2>Dashboard</h2>
-            
+                       
             <div id="allSites" class="tab-content" style="height: 100vh;">
-                <h4>All Sites</h4>
+                <h4 style="width:82%;margin:3rem auto 0 auto;">All Sites</h4>
                 <table class="table table-bordered" id="sitesTable">
                     <thead>
                         <tr>
                             <th>Site Name</th>
                             <th>Status</th>
                             <th>Subscription</th>
+                            <th>Subscription Expiry Date</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -42,83 +86,89 @@
                     Your browser does not support iframes.
                 </iframe>
             </div>
+            <div id="renewsitesubscription" class="tab-content" style="display:none; height: 100vh;">
+                <iframe src="re-new-site-subscription.html" width="100%" height="100vh" frameborder="0" style="height: 100vh;">
+                    <!-- Your browser does not support iframes. -->
+                </iframe>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
-    const apiUrl = "/api/resource/Site"; // Replace with your actual Frappe API URL
-
-    // Fetch sites data and display it in the table
     function fetchSiteData() {
-        fetch(apiUrl)
-            .then(response => response.json())
-            .then(data => {
-                const sitesTableBody = document.querySelector("#sitesTable tbody");
-                sitesTableBody.innerHTML = ""; // Clear existing data
-                data.data.forEach(site => {
-                    const row = `
-                        <tr>
-                            <td>${site.site_name}</td>
-                            <td>${site.status}</td>
-                            <td>${site.subscription}</td>
-                        </tr>
-                    `;
-                    sitesTableBody.innerHTML += row;
-                });
-            })
-            .catch(error => console.error("Error fetching site data:", error));
+            frappe.call({
+                method: "nextpty_auto_server_setup.apis.site.get_site_data",
+                callback: function(response) {
+                    const data = response.message;
+                    console.log(data);
+                    const sitesTableBody = document.querySelector("#sitesTable tbody");
+                    sitesTableBody.innerHTML = "";
+                    data.forEach(site => {
+                        const subscriptionClass = site.subscription === "Active" ? "label-active" : "label-inactive";
+
+                        const row = `
+                            <tr>
+                                <td>${site.site_name}</td>
+                                <td>${site.status}</td>
+                                <td><span class="subscription-label ${subscriptionClass}">${site.subscription}</span></td>
+                                <td>${site.expiry_date}</td>
+                            </tr>
+                        `;
+                        sitesTableBody.innerHTML += row;
+                    });
+                },
+                error: function(error) {
+                    console.error("Error fetching site data:", error);
+                }
+            });
+        }
+
+
+    document.addEventListener("DOMContentLoaded", function() {
+        
+    const allSitesLink = document.getElementById("allSitesLink");
+    const createNewSiteLink = document.getElementById("createNewSiteLink");
+    const renewSiteSubscriptionLink = document.getElementById("renewSiteSubscription");
+
+    function setActiveTab(activeTab) {
+        allSitesLink.classList.remove("active");
+        createNewSiteLink.classList.remove("active");
+        renewSiteSubscriptionLink.classList.remove("active");
+
+        activeTab.classList.add("active");
     }
 
-    // Handle menu clicks to switch between tabs
-    document.getElementById("allSitesLink").addEventListener("click", function() {
+    fetchSiteData();
+    setActiveTab(allSitesLink);
+
+    allSitesLink.addEventListener("click", function() {
+        event.preventDefault();
+        setActiveTab(allSitesLink);
+
         document.getElementById("allSites").style.display = "block";
         document.getElementById("createNewSite").style.display = "none";
+        document.getElementById("renewsitesubscription").style.display = "none";
         fetchSiteData();
     });
 
-    document.getElementById("createNewSiteLink").addEventListener("click", function() {
+    createNewSiteLink.addEventListener("click", function() {
+        event.preventDefault();
+        setActiveTab(createNewSiteLink);
+
         document.getElementById("createNewSite").style.display = "block";
         document.getElementById("allSites").style.display = "none";
-    });
+        document.getElementById("renewsitesubscription").style.display = "none";
 
-    // Handle new site form submission
-    document.getElementById("newSiteForm").addEventListener("submit", function(event) {
+    });
+    renewSiteSubscriptionLink.addEventListener("click", function() {
         event.preventDefault();
-        const siteName = document.getElementById("siteName").value;
-        const status = document.getElementById("status").value;
-        const subscription = document.getElementById("subscription").value;
+        setActiveTab(renewSiteSubscriptionLink);
 
-        // POST request to create a new site via Frappe API
-        const postData = {
-            site_name: siteName,
-            status: status,
-            subscription: subscription
-        };
-
-        fetch(apiUrl, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer your_api_token"  // Add your authentication here
-            },
-            body: JSON.stringify(postData)
-        })
-            .then(response => response.json())
-            .then(data => {
-                console.log("Site created:", data);
-                alert("New site created successfully!");
-                fetchSiteData();  // Reload the site list
-                document.getElementById("newSiteForm").reset();
-                document.getElementById("createNewSite").style.display = "none";
-                document.getElementById("allSites").style.display = "block";
-            })
-            .catch(error => {
-                console.error("Error creating site:", error);
-                alert("Failed to create site.");
-            });
+        document.getElementById("renewsitesubscription").style.display = "block";
+        document.getElementById("createNewSite").style.display = "none";
+        document.getElementById("allSites").style.display = "none";
+    });    
     });
-
-    fetchSiteData();
 </script>
 {% endblock %}

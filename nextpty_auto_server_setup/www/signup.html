@@ -16,7 +16,7 @@
 {% block content %}
     <div class="container my-10">
         <div class="row justify-content-center">
-            <div class="col-md-6 border border-5 rounded-10">
+            <div class="col-md-6 border border-5 rounded-10" style="min-width: fit-content;">
                 <h2 class="text-center">Signup</h2>
                 <form method="POST" id="signupForm" class="form-horizontal p-10">
                     <div class="form-group row">
@@ -78,6 +78,9 @@
                       <div class="form-group row">
                         <label for="recaptcha" class="col-12 col-form-label">Please verify you are human:</label>
                         <div class="col-12" id="recaptcha"></div>
+                        <div class="col-12">
+                            <small id="recaptcha1" class="form-text text-danger" style="display: none;"></small>
+                        </div>
                       </div>
                     
                       
@@ -165,7 +168,9 @@
                 // Check reCAPTCHA response
                 var recaptchaResponse = grecaptcha.getResponse();
                 if (!recaptchaResponse) {
-                    alert('Please verify that you are human.');
+                    document.getElementById('recaptcha1').textContent = "please verify your recaptcha";
+                    document.getElementById('recaptcha1').style.display = 'block';
+                    // alert('Please verify that you are human.');
                     isValid = false;
                 }
 
