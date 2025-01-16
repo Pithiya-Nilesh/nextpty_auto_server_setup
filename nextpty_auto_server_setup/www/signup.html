@@ -2,48 +2,51 @@
 {% block title %} Sign Up {% endblock %}
 {% block head_include %}
 <script type="text/javascript">
-  var onloadCallback = function() {
-    // This function will be called once reCAPTCHA is ready
-    grecaptcha.render('recaptcha', {
-      'sitekey' : '6LdoVaoqAAAAACl88awt7LnonUSQjveEnzNVAcqS'
-    });
-  };
+    var onloadCallback = function () {
+        // This function will be called once reCAPTCHA is ready
+        grecaptcha.render('recaptcha', {
+            'sitekey': '6LdoVaoqAAAAACl88awt7LnonUSQjveEnzNVAcqS'
+        });
+    };
 </script>
 <script src="https://www.google.com/recaptcha/api.js?onload=onloadCallback&render=explicit" async defer></script>
 {% endblock %}
 
 
 {% block content %}
-    <div class="container my-10">
-        <div class="row justify-content-center">
-            <div class="col-md-6 border border-5 rounded-10" style="min-width: fit-content;">
-                <h2 class="text-center">Signup</h2>
-                <form method="POST" id="signupForm" class="form-horizontal p-10">
-                    <div class="form-group row">
-                        <label for="company_name" class="col-12 col-form-label">Company / Person Name</label>
-                        <div class="col-12">
-                            <input type="text" class="form-control" id="company_name" name="company_name" placeholder="Enter Company / Person Name" oninput="updateSiteName()">
-                            <small id="company_name_error" class="form-text text-danger" style="display: none;"></small>
-                        </div>
+<div class="container my-10">
+    <div class="row justify-content-center">
+        <div class="col-md-6 border border-5 rounded-10" style="min-width: fit-content;">
+            <h2 class="text-center">Signup</h2>
+            <form method="POST" id="signupForm" class="form-horizontal p-10">
+                <div class="form-group row">
+                    <label for="company_name" class="col-12 col-form-label">Company / Person Name</label>
+                    <div class="col-12">
+                        <input type="text" class="form-control" id="company_name" name="company_name"
+                            placeholder="Enter Company / Person Name" oninput="updateSiteName()">
+                        <small id="company_name_error" class="form-text text-danger" style="display: none;"></small>
                     </div>
+                </div>
 
-                    <div class="form-group row">
-                        <label for="contact_name" class="col-12 col-form-label">Contact Name</label>
-                        <div class="col-12">
-                            <input type="text" class="form-control" id="contact_name" name="contact_name" placeholder="Enter Contact Name" >
-                            <small id="contact_name_error" class="form-text text-danger" style="display: none;"></small>
-                        </div>
+                <div class="form-group row">
+                    <label for="contact_name" class="col-12 col-form-label">Contact Name</label>
+                    <div class="col-12">
+                        <input type="text" class="form-control" id="contact_name" name="contact_name"
+                            placeholder="Enter Contact Name">
+                        <small id="contact_name_error" class="form-text text-danger" style="display: none;"></small>
                     </div>
+                </div>
 
-                    <div class="form-group row">
-                        <label for="contact_email" class="col-12 col-form-label">Contact Email</label>
-                        <div class="col-12">
-                            <input type="text" class="form-control" id="contact_email" name="contact_email" placeholder="Enter Contact Email" >
-                            <small id="contact_email_error" class="form-text text-danger" style="display: none;"></small>
-                        </div>
+                <div class="form-group row">
+                    <label for="contact_email" class="col-12 col-form-label">Contact Email</label>
+                    <div class="col-12">
+                        <input type="text" class="form-control" id="contact_email" name="contact_email"
+                            placeholder="Enter Contact Email">
+                        <small id="contact_email_error" class="form-text text-danger" style="display: none;"></small>
                     </div>
+                </div>
 
-                    <!-- <div class="form-group row">
+                <!-- <div class="form-group row">
                         <label for="site_name" class="col-12 col-form-label">Site Name</label>
                         <div class="col-md-9">
                             <input type="text" class="form-control" id="site_name" name="site_name" placeholder="Enter Site Name">
@@ -51,206 +54,208 @@
                         </div>
                         <div><span>.nextpty.com</span></div>
                     </div> -->
-                    
-                    <div class="form-group row">
-                        <label for="site_name" class="col-12 col-form-label">Site Name</label>
-                        <div class="col-md-12 d-flex">
-                          <input 
-                            type="text" 
-                            class="form-control" 
-                            id="site_name" 
-                            name="site_name" 
-                            placeholder="Enter Site Name"
-                            style="border-top-right-radius: 0; border-bottom-right-radius: 0;"
-                          >
-                          <div 
-                            class="d-flex align-items-center bg-light px-3" 
-                            style="border-top-left-radius: 0; border-bottom-left-radius: 0;"
-                          >
-                            .nextpty.com
-                          </div>
-                        </div>
-                        <div class="col-12">
-                          <small id="site_name_error" class="form-text text-danger" style="display: none;"></small>
-                        </div>
-                      </div>
-                    
-                      <div class="form-group row">
-                        <label for="recaptcha" class="col-12 col-form-label">Please verify you are human:</label>
-                        <div class="col-12" id="recaptcha"></div>
-                        <div class="col-12">
-                            <small id="recaptcha1" class="form-text text-danger" style="display: none;"></small>
-                        </div>
-                      </div>
-                    
-                      
 
-                    <div class="form-group row mt-10">
-                        <div class="col-12">
-                            <button type="submit" class="btn btn-primary w-100">Submit</button>
+                <div class="form-group row">
+                    <label for="site_name" class="col-12 col-form-label">Site Name</label>
+                    <div class="col-md-12 d-flex">
+                        <input type="text" class="form-control" id="site_name" name="site_name"
+                            placeholder="Enter Site Name"
+                            style="border-top-right-radius: 0; border-bottom-right-radius: 0;">
+                        <div class="d-flex align-items-center bg-light px-3"
+                            style="border-top-left-radius: 0; border-bottom-left-radius: 0;">
+                            .nextpty.com
                         </div>
                     </div>
-                </form>
-            </div>
+                    <div class="col-12">
+                        <small id="site_name_error" class="form-text text-danger" style="display: none;"></small>
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <label for="recaptcha" class="col-12 col-form-label">Please verify you are human:</label>
+                    <div class="col-12" id="recaptcha"></div>
+                    <div class="col-12">
+                        <small id="recaptcha1" class="form-text text-danger" style="display: none;"></small>
+                    </div>
+                </div>
+
+
+
+                <div class="form-group row mt-10">
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-primary w-100">Submit</button>
+                    </div>
+                </div>
+            </form>
         </div>
     </div>
+</div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            var navbar = document.querySelector('.navbar');
-            if (navbar) {
-                navbar.style.display = 'none';
-            }
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var navbar = document.querySelector('.navbar');
+        if (navbar) {
+            navbar.style.display = 'none';
+        }
 
-            var footer = document.querySelector('.web-footer');
-            if (footer) {
-                footer.style.display = 'none';
-            }
+        var footer = document.querySelector('.web-footer');
+        if (footer) {
+            footer.style.display = 'none';
+        }
 
-            var logged_in_user = frappe.session.user
-            //  || logged_in_user !== 'Administrator'
-            if (logged_in_user !== 'Administrator'){
-                get_logged_in_user_details()
-            }
+        var logged_in_user = frappe.session.user
+        //  || logged_in_user !== 'Administrator'
+        if (logged_in_user !== 'Administrator') {
+            get_logged_in_user_details()
+        }
 
-            var signupForm = document.getElementById('signupForm');
-            
-            function validateForm() {
-                var isValid = true;
+        var signupForm = document.getElementById('signupForm');
 
-                // Reset all error messages
-                var errorMessages = document.querySelectorAll('.form-text');
-                errorMessages.forEach(function(errorMessage) {
-                    errorMessage.style.display = 'none';
-                });
+        function validateForm() {
+            var isValid = true;
 
-                // Check Company Name
-                var companyName = document.getElementById('company_name').value;
-                if (!companyName.trim()) {
-                    document.getElementById('company_name_error').textContent = 'Company / Person Name is required.';
-                    document.getElementById('company_name_error').style.display = 'block';
-                    isValid = false;
-                }
-
-                // Check Contact Name
-                var contactName = document.getElementById('contact_name').value;
-                if (!contactName.trim()) {
-                    document.getElementById('contact_name_error').textContent = 'Contact Name is required.';
-                    document.getElementById('contact_name_error').style.display = 'block';
-                    isValid = false;
-                }
-
-                // Check Email format
-                var contactEmail = document.getElementById('contact_email').value;
-                var emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
-                if (!contactEmail.trim()) {
-                    document.getElementById('contact_email_error').textContent = 'Email is required.';
-                    document.getElementById('contact_email_error').style.display = 'block';
-                    isValid = false;
-                } else if (!emailPattern.test(contactEmail)) {
-                    document.getElementById('contact_email_error').textContent = 'Please enter a valid email address.';
-                    document.getElementById('contact_email_error').style.display = 'block';
-                    isValid = false;
-                }
-
-                // Check Site Name
-                var siteName = document.getElementById('site_name').value;
-                if (!siteName.trim()) {
-                    document.getElementById('site_name_error').textContent = 'Site Name is required.';
-                    document.getElementById('site_name_error').style.display = 'block';
-                    isValid = false;
-                } else if (siteName.trim().length < 5) {
-                    document.getElementById('site_name_error').textContent = 'site name is too short. use 5 or more characters.';
-                    document.getElementById('site_name_error').style.display = 'block';
-                    isValid = false;
-                }
-
-                // Check reCAPTCHA response
-                var recaptchaResponse = grecaptcha.getResponse();
-                if (!recaptchaResponse) {
-                    document.getElementById('recaptcha1').textContent = "please verify your recaptcha";
-                    document.getElementById('recaptcha1').style.display = 'block';
-                    // alert('Please verify that you are human.');
-                    isValid = false;
-                }
-
-                return isValid;
-            }
-
-            signupForm.addEventListener('submit', function(event) {
-                event.preventDefault();
-
-                // Validate form before submitting
-                if (validateForm()) {
-                    var formData = {
-                        company_name: document.getElementById('company_name').value,
-                        contact_name: document.getElementById('contact_name').value,
-                        contact_email: document.getElementById('contact_email').value,
-                        site_name: document.getElementById('site_name').value,
-                        recaptcha_response: grecaptcha.getResponse()
-                    };
-
-                    frappe.call({
-                        method: "nextpty_auto_server_setup.www.signup.signup",
-                        args: {
-                            formdata: formData
-                        },
-                        callback: function(res) {
-                            document.getElementById('company_name').value = "";
-                            document.getElementById('contact_name').value = "";
-                            document.getElementById('contact_email').value = "";
-                            document.getElementById('site_name').value = "";
-
-                        },
-                        error: function(err) {
-                            alert("Error: " + err.message);
-                        },
-                        freeze: true,
-                        freeze_message: "Please wait..."
-                    });
-                }
+            // Reset all error messages
+            var errorMessages = document.querySelectorAll('.form-text');
+            errorMessages.forEach(function (errorMessage) {
+                errorMessage.style.display = 'none';
             });
-        
-            var siteNameInput = document.getElementById('site_name');
 
-            siteNameInput.addEventListener("input", function() {
-                var siteName = siteNameInput.value;
-                siteName = siteName.replace(/[\s\+]_/g, '-');
-                siteName = siteName.replace(/[^a-zA-Z0-9-]/g, '');
-                siteNameInput.value = siteName.toLowerCase()
-                if (siteName.toLowerCase().length < 5) {
-                    document.getElementById('site_name_error').textContent = 'Site Name is too short. use 5 or more characters.';
-                    document.getElementById('site_name_error').style.display = 'block';
-                }
-                else{
-                    document.getElementById('site_name_error').textContent = '';
-                    document.getElementById('site_name_error').style.display = 'none';
-                }
-            });          
-
-            function get_logged_in_user_details(){
-                frappe.call({
-                    method: 'nextpty_auto_server_setup.www.signup.get_logged_in_user_details',
-                    args: {
-                        user: frappe.session.user
-                    },
-                    callback: function(res){
-                        console.log("user details", res)
-                            var company_name = document.getElementById('company_name').value = res.message['customer']
-                            var contact_name = document.getElementById('contact_name').value = res.message['contact_name']
-                            var contact_email = document.getElementById('contact_email').value = res.message['contact_email']
-                    }
-                })
+            // Check Company Name
+            var companyName = document.getElementById('company_name').value;
+            if (!companyName.trim()) {
+                document.getElementById('company_name_error').textContent = 'Company / Person Name is required.';
+                document.getElementById('company_name_error').style.display = 'block';
+                isValid = false;
             }
-            
+
+            // Check Contact Name
+            var contactName = document.getElementById('contact_name').value;
+            if (!contactName.trim()) {
+                document.getElementById('contact_name_error').textContent = 'Contact Name is required.';
+                document.getElementById('contact_name_error').style.display = 'block';
+                isValid = false;
+            }
+
+            // Check Email format
+            var contactEmail = document.getElementById('contact_email').value;
+            var emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
+            if (!contactEmail.trim()) {
+                document.getElementById('contact_email_error').textContent = 'Email is required.';
+                document.getElementById('contact_email_error').style.display = 'block';
+                isValid = false;
+            } else if (!emailPattern.test(contactEmail)) {
+                document.getElementById('contact_email_error').textContent = 'Please enter a valid email address.';
+                document.getElementById('contact_email_error').style.display = 'block';
+                isValid = false;
+            }
+
+            // Check Site Name
+            var siteName = document.getElementById('site_name').value;
+            if (!siteName.trim()) {
+                document.getElementById('site_name_error').textContent = 'Site Name is required.';
+                document.getElementById('site_name_error').style.display = 'block';
+                isValid = false;
+            } else if (siteName.trim().length < 5) {
+                document.getElementById('site_name_error').textContent = 'site name is too short. use 5 or more characters.';
+                document.getElementById('site_name_error').style.display = 'block';
+                isValid = false;
+            }
+            else if (siteName.trim().length > 32) {
+                document.getElementById('site_name_error').textContent = 'Site Name is too long. use 32 or less characters.';
+                document.getElementById('site_name_error').style.display = 'block';
+                isValid = false;
+            }
+
+            // Check reCAPTCHA response
+            var recaptchaResponse = grecaptcha.getResponse();
+            if (!recaptchaResponse) {
+                document.getElementById('recaptcha1').textContent = "please verify your recaptcha";
+                document.getElementById('recaptcha1').style.display = 'block';
+                // alert('Please verify that you are human.');
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+        signupForm.addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            // Validate form before submitting
+            if (validateForm()) {
+                var formData = {
+                    company_name: document.getElementById('company_name').value,
+                    contact_name: document.getElementById('contact_name').value,
+                    contact_email: document.getElementById('contact_email').value,
+                    site_name: document.getElementById('site_name').value,
+                    recaptcha_response: grecaptcha.getResponse()
+                };
+
+                frappe.call({
+                    method: "nextpty_auto_server_setup.www.signup.signup",
+                    args: {
+                        formdata: formData
+                    },
+                    callback: function (res) {
+                        document.getElementById('company_name').value = "";
+                        document.getElementById('contact_name').value = "";
+                        document.getElementById('contact_email').value = "";
+                        document.getElementById('site_name').value = "";
+
+                    },
+                    error: function (err) {
+                        alert("Error: " + err.message);
+                    },
+                    freeze: true,
+                    freeze_message: "Please wait..."
+                });
+            }
         });
 
-        function updateSiteName() {
-            const companyNameInput = document.getElementById('company_name');
-            const siteNameInput = document.getElementById('site_name');
-            siteNameInput.value = companyNameInput.value.toLowerCase().replace(/\s+/g, '-');
+        var siteNameInput = document.getElementById('site_name');
+
+        siteNameInput.addEventListener("input", function () {
+            var siteName = siteNameInput.value;
+            siteName = siteName.replace(/[\s\+]_/g, '-');
+            siteName = siteName.replace(/[^a-zA-Z0-9-]/g, '');
+            siteNameInput.value = siteName.toLowerCase()
+            if (siteName.toLowerCase().length < 5) {
+                document.getElementById('site_name_error').textContent = 'Site Name is too short. use 5 or more characters.';
+                document.getElementById('site_name_error').style.display = 'block';
+            }
+            else if (siteName.toLowerCase().length > 32) {
+                document.getElementById('site_name_error').textContent = 'Site Name is too long. use 32 or less characters.';
+                document.getElementById('site_name_error').style.display = 'block';
+            }
+            else {
+                document.getElementById('site_name_error').textContent = '';
+                document.getElementById('site_name_error').style.display = 'none';
+            }
+        });
+
+        function get_logged_in_user_details() {
+            frappe.call({
+                method: 'nextpty_auto_server_setup.www.signup.get_logged_in_user_details',
+                args: {
+                    user: frappe.session.user
+                },
+                callback: function (res) {
+                    console.log("user details", res)
+                    var company_name = document.getElementById('company_name').value = res.message['customer']
+                    var contact_name = document.getElementById('contact_name').value = res.message['contact_name']
+                    var contact_email = document.getElementById('contact_email').value = res.message['contact_email']
+                }
+            })
         }
-                    
-    </script>
+
+    });
+
+    function updateSiteName() {
+        const companyNameInput = document.getElementById('company_name');
+        const siteNameInput = document.getElementById('site_name');
+        siteNameInput.value = companyNameInput.value.toLowerCase().replace(/\s+/g, '-');
+    }
+
+</script>
 
 {% endblock %}

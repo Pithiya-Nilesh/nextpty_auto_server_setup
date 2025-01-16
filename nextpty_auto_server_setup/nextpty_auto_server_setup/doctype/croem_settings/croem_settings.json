@@ -1,0 +1,87 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-01-16 11:16:19.597580",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "enable",
+  "widget_sandbox_url",
+  "widget_production_url",
+  "api_key",
+  "column_break_mrct",
+  "use_sandbox",
+  "transaction_sandbox_url",
+  "transaction_production_url"
+ ],
+ "fields": [
+  {
+   "default": "0",
+   "fieldname": "enable",
+   "fieldtype": "Check",
+   "label": "Enable"
+  },
+  {
+   "default": "0",
+   "fieldname": "use_sandbox",
+   "fieldtype": "Check",
+   "label": "Use Sandbox"
+  },
+  {
+   "fieldname": "api_key",
+   "fieldtype": "Password",
+   "label": "API Key"
+  },
+  {
+   "default": "https://bacapicomponentv2-test.merchantprocess.net/UIComponent/CreditCard",
+   "fieldname": "widget_sandbox_url",
+   "fieldtype": "Data",
+   "label": "Widget Sandbox URL"
+  },
+  {
+   "default": "https://bacgateway.merchantprocess.net/SecureComponent/v2/UIComponent/CreditCard",
+   "fieldname": "widget_production_url",
+   "fieldtype": "Data",
+   "label": "Widget Production URL"
+  },
+  {
+   "default": "https://tokenv2.test.merchantprocess.net/TokenWebService.asmx",
+   "fieldname": "transaction_sandbox_url",
+   "fieldtype": "Data",
+   "label": "Transaction Sandbox URL"
+  },
+  {
+   "default": "https://gateway.merchantprocess.net/tokenv2/TokenWebService.asmx",
+   "fieldname": "transaction_production_url",
+   "fieldtype": "Data",
+   "label": "Transaction Production URL"
+  },
+  {
+   "fieldname": "column_break_mrct",
+   "fieldtype": "Column Break"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2025-01-16 11:28:20.195769",
+ "modified_by": "Administrator",
+ "module": "Nextpty Auto Server Setup",
+ "name": "Croem Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

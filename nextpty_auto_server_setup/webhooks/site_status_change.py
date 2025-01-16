@@ -119,8 +119,19 @@ def send_site_active_email(site, parent, res):
             <p>Atentamente,</p>
             <p>NextPTY</p>
         """
-        
+        create_user_password(msg)
         frappe.sendmail(recipients=[f"{msg['user']}"], sender="soporte@nextpty.com", subject=email_subject, message=email_template, now=True)
         frappe.log_error("Email send", f"site: {site_name}\nparent: {parent}\nres: {res}")
     except Exception as e:
         frappe.log_error("Error: While sending site creation email", f"Error: {e}\nparent: {parent}\nres: {res}")
+
+
+def create_user_password(msg):
+    try:
+        from frappe.utils.password import update_password
+        password = msg['password']
+        email = msg['user']
+        update_password(email, password)
+        frappe.db.commit()
+    except Exception as e:
+        frappe.log_error("Error: While create user password", f"Error: {e}\nmsg:{msg}")
