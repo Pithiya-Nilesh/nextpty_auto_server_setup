@@ -1,78 +1,43 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Paguelofacil Payment Integration - Production</title>
-    <script src="https://secure.paguelofacil.com/HostedFields/vendor/scripts/WALLET/PFScript.js"></script>
+    <title>payment test</title>
 </head>
+
 <body>
     <div align="center">
         <h1>Payment Form</h1>
-        <div id="container-form" style="width: 45%;"></div>
+        <div id="creditcard-container">dfd</div>
     </div>
 
-    <script>
-        // Function to get URL parameters
-        const getUrlParam = (key) => new URLSearchParams(window.location.search).get(key);
+</body>
+<script>
+    const params = new URLSearchParams({
+        APIKey: "FOadLuTCRArH",
+        Token: "",
+        Culture: ""
+    }).toString();
 
-        // Initialize Paguelofacil Wallet Object
-        pfWallet = pfWallet || {};
-
-        // Replace with your actual Production API Key and Código Web (CCLW)
-        let apiKey = "D6D34C73AF4206A09C34DDC7AC042995767138940A56FAE268818F00F85B7B84A4F5681BA9BC67F84ACB6A91A29EE35C47E7C958166712325CA668443D5A8B5E"; // Replace with your actual Access Token API
-        let cclw = "E8DA6AA8D31E3E2A06229B828C098BBE8F62231ABB43F38A1B1E6ACB818BB34C"; // Replace with your actual Código Web
-        
-        // Use Production Environment
-        pfWallet.useAsSandbox(false); // Set to false for production
-
-        // Open the service with provided API key and Código Web
-        pfWallet.openService({
-            apiKey: apiKey,
-            cclw: cclw
-        }).then(function (merchantSetup) {
-            startMerchantForm(merchantSetup); // Start the form after successful merchant setup
-        }, function (error) {
-            console.log("Error in merchant setup:", error); // Log any errors in the setup
+    fetch(`https://bacapicomponentv2-test.merchantprocess.net/UIComponent/CreditCard?APIKey=FOadLuTCRArH&Token=&Culture=`, {
+        method: "GET"
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.text();
+        })
+        .then(jsonResponse => {
+            console.log("asdf", jsonResponse)
+            document.getElementById("creditcard-container").innerHTML = jsonResponse;
+        })
+        .catch(error => {
+            console.error("Error fetching data:", error);
         });
 
-        let sdk; // Declare the SDK object globally
-        function startMerchantForm(merchantSetup) {
-            // Payment Information
-            let paymentInfo = {
-                amount: parseFloat(getUrlParam('monto') || 0), // Amount to be charged
-                discount: 0.0, // Discount amount if any
-                taxAmount: 0.0, // Tax amount
-                description: getUrlParam('descripcion') || "Purchase Description" // Description of the purchase
-            };
+</script>
 
-            // Configuration for the payment form
-            let setup = {
-                lang: 'es', // Language of the form
-                embedded: (getUrlParam('boton') == "false"), // Whether to embed the form
-                container: 'container-form', // ID of the container where the form will render
-                onError: function (data) {
-                    console.error("Errors occurred:", data); // Log errors
-                },
-                onTxSuccess: function (data) {
-                    console.log("Transaction Successful:", data); // Log success data
-                    window.location.href = pfWallet.pfHostViews + `/pf/default-receipt/${data?.Oper}`; // Redirect to the receipt page
-                },
-                onTxError: function (data) {
-                    console.error("Transaction Error:", data); // Log transaction errors
-                },
-                onClose: function () {
-                    console.log("Payment form closed."); // Log when form is closed
-                }
-            };
-
-            // Initialize the payment form
-            sdk = merchantSetup.init(
-                merchantSetup.dataMerchant, // Merchant data provided during setup
-                paymentInfo, // Payment information
-                setup // Configuration for the form
-            );
-        }
-    </script>
-</body>
 </html>
