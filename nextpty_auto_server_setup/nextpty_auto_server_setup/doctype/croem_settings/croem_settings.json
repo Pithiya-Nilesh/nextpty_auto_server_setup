@@ -6,13 +6,15 @@
  "engine": "InnoDB",
  "field_order": [
   "enable",
-  "widget_sandbox_url",
   "widget_production_url",
+  "transaction_production_url",
   "api_key",
+  "midmerchant",
+  "tidterminal",
   "column_break_mrct",
   "use_sandbox",
-  "transaction_sandbox_url",
-  "transaction_production_url"
+  "widget_sandbox_url",
+  "transaction_sandbox_url"
  ],
  "fields": [
   {
@@ -30,41 +32,58 @@
   {
    "fieldname": "api_key",
    "fieldtype": "Password",
-   "label": "API Key"
+   "label": "API Key",
+   "mandatory_depends_on": "eval:doc.enable===1"
   },
   {
    "default": "https://bacapicomponentv2-test.merchantprocess.net/UIComponent/CreditCard",
    "fieldname": "widget_sandbox_url",
    "fieldtype": "Data",
-   "label": "Widget Sandbox URL"
+   "label": "Widget Sandbox URL",
+   "mandatory_depends_on": "eval:doc.enable===1 && doc.use_sandbox===1"
   },
   {
    "default": "https://bacgateway.merchantprocess.net/SecureComponent/v2/UIComponent/CreditCard",
    "fieldname": "widget_production_url",
    "fieldtype": "Data",
-   "label": "Widget Production URL"
+   "label": "Widget Production URL",
+   "mandatory_depends_on": "eval:doc.enable===1 && doc.use_sandbox!==1"
   },
   {
    "default": "https://tokenv2.test.merchantprocess.net/TokenWebService.asmx",
    "fieldname": "transaction_sandbox_url",
    "fieldtype": "Data",
-   "label": "Transaction Sandbox URL"
+   "label": "Transaction Sandbox URL",
+   "mandatory_depends_on": "eval:doc.enable===1 && doc.use_sandbox===1"
   },
   {
    "default": "https://gateway.merchantprocess.net/tokenv2/TokenWebService.asmx",
    "fieldname": "transaction_production_url",
    "fieldtype": "Data",
-   "label": "Transaction Production URL"
+   "label": "Transaction Production URL",
+   "mandatory_depends_on": "eval:doc.enable===1 && doc.use_sandbox!==1"
   },
   {
    "fieldname": "column_break_mrct",
    "fieldtype": "Column Break"
+  },
+  {
+   "default": "112584",
+   "fieldname": "midmerchant",
+   "fieldtype": "Data",
+   "label": "MID/Merchant"
+  },
+  {
+   "default": "112584001",
+   "fieldname": "tidterminal",
+   "fieldtype": "Data",
+   "label": "TID/Terminal"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2025-01-16 11:28:20.195769",
+ "modified": "2025-01-18 18:03:48.575289",
  "modified_by": "Administrator",
  "module": "Nextpty Auto Server Setup",
  "name": "Croem Settings",
@@ -79,6 +98,13 @@
    "role": "System Manager",
    "share": 1,
    "write": 1
+  },
+  {
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "Customer",
+   "share": 1
   }
  ],
  "sort_field": "modified",

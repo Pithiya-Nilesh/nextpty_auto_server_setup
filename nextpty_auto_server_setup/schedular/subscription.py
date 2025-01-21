@@ -158,7 +158,7 @@ def re_new_subscription(site, subscription_type, plan, is_trial=0):
                     active = activate_site(site)
                     if active:
                         frappe.msgprint(title= "Success", message= "Your Site Subscription is renewed", indicator= "green")
-                        
+                        return True
             else:
                 return frappe.throw("Customer Not Found", "Customer not found for this site.")
         else:

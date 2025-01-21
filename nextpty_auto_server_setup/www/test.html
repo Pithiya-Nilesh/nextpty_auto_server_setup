@@ -12,49 +12,80 @@
 
 <script>
     function SaveCreditCard_SuccessCallback(response) {
-        console.log("reee", response.TokenDetails.AccountToken);
-    }
-    
-    fetch(
-        `https://bacapicomponentv2-test.merchantprocess.net/UIComponent/CreditCard?APIKey=FOadLuTCRArH&Token=&Culture=`,
-        {
-            method: "GET"
-        }
-    )
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
-            }
-            return response.text();
-        })
-        .then(htmlResponse => {
-            // console.log("Fetched HTML:", htmlResponse);
-            const container = document.getElementById("creditcard-container");
-            container.innerHTML = htmlResponse;
+        let cardToken = response.TokenDetails.AccountToken;
+        let accountNumber = response.TokenDetails.AccountNumber;
+        let cardholderName = response.TokenDetails.CardHolderName;
+        let associatedCard = response.TokenDetails.CardNumber;
 
-            const scripts = container.querySelectorAll("script");
-            scripts.forEach(script => {
-                const newScript = document.createElement("script");
-                if (script.src) {
-                    newScript.src = script.src;
-                    newScript.async = true;
-                } else {
-                    newScript.textContent = script.textContent;
-                }
-                document.body.appendChild(newScript);
-            });
+        console.log("cardToken", cardToken)
+        console.log("accountNumber", accountNumber)
+        console.log("cardholderName", cardholderName)
+        console.log("associatedCard", associatedCard)
+
+        frappe.call({
+            method: "nextpty_auto_server_setup.www.payment.create_payment",
+            args: {
+                plan: "Trial",
+                site: "",
+                subscription_type: "monthly",
+                is_trial: 0,
+                popup_response: response.TokenDetails
+            },
+            callback: function(res){
+                console.log("payment res", res)
+            }
         })
-        .catch(error => {
-            console.error("Error fetching data:", error);
-            document.getElementById("creditcard-container").innerHTML = `
+    }
+
+    // Failed tokenization:
+    function SaveCreditCard_FailureCallback(response) {
+        console.log(response.ResponseCode);
+        console.log(response.ResponseDescription);
+    }
+
+    // Cancellation on the form:
+    function SaveCreditCard_CancelCallback() {
+        console.log("Cancel button pressed");
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+
+        frappe.call({
+            method: "nextpty_auto_server_setup.www.payment.get_payment_popup",
+            callback: function (response) {
+                const container = document.getElementById("creditcard-container");
+                if (response.message && response.message.html) {
+                    container.innerHTML = response.message.html;
+
+                    const scripts = container.querySelectorAll("script");
+                    scripts.forEach(script => {
+                        const newScript = document.createElement("script");
+                        if (script.src) {
+                            newScript.src = script.src;
+                            newScript.async = true;
+                        } else {
+                            newScript.textContent = script.textContent;
+                        }
+                        document.body.appendChild(newScript);
+                    });
+                } else {
+                    container.innerHTML = `
+                <div style="color: red;">
+                    Failed to load the payment form. Please try again later.
+                </div>
+            `;
+                }
+            },
+            error: function (error) {
+                console.error("Error fetching data:", error);
+                document.getElementById("creditcard-container").innerHTML = `
             <div style="color: red;">
                 An error occurred while loading the payment form. Please try again later.
             </div>
         `;
+            }
         });
-
-    
-
+    })
 
 </script>
 
