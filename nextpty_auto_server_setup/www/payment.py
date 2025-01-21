@@ -9,7 +9,7 @@ import xml.etree.ElementTree as ET
 
 
 @frappe.whitelist(allow_guest=True)
-def get_payment_popup(user=frappe.session.user):
+def get_payment_popup(user=frappe.session.user, site_name=""):
     try:
         settings = frappe.get_doc("Croem Settings")
         if not settings.enable:
@@ -21,6 +21,11 @@ def get_payment_popup(user=frappe.session.user):
             widget_url = settings.widget_production_url
         
         token = ""
+        if user and site_name:
+            name = frappe.db.get_value("Croem Saved Card Token", filters={"user": user, "site_name": site_name}, fieldname=['name'])
+            if name:
+                token = get_decrypted_password("Croem Saved Card Token", name, "token")
+            
         # if frappe.db.get_value("Croem Save Token", user, fieldname=['name']):
         #     token = get_decrypted_password("Croem Save Token", user, "token")
         
@@ -42,11 +47,19 @@ def get_payment_popup(user=frappe.session.user):
 
 
 @frappe.whitelist(allow_guest=True)
-def create_payment(plan, subscription_type, site, popup_response, is_trial=0, user=frappe.session.user, is_new=0):
+def create_payment(plan, subscription_type, site, popup_response, is_trial=0, user=frappe.session.user, is_new=0, save_card=1):
     try:
-        popup_response = json.loads(popup_response)
+        print("\n\n res pop ", popup_response)
+        print("\n\n res plan ", plan)
+        print("\n\n res subscription_type ", subscription_type)
+        print("\n\n res site ", site)
         
-        save_card_details(user, popup_response)
+        if save_card:
+            popup_response = json.loads(popup_response)
+            save_card_details(user, popup_response)
+            token = popup_response.get("AccountToken")
+        else:
+            token = popup_response
         
         settings = frappe.get_doc("Croem Settings")
         if not settings.enable:
@@ -57,8 +70,7 @@ def create_payment(plan, subscription_type, site, popup_response, is_trial=0, us
         else:
             transaction_url = settings.transaction_production_url
         
-        token = popup_response.get("AccountToken")
-        amount = 10
+        amount = frappe.db.get_value("Subscription Plan", plan, fieldname=['cost'])
         
         # token = ""
         # if frappe.db.get_value("Croem Save Token", user, fieldname=['name']):

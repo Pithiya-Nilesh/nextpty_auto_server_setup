@@ -2,7 +2,9 @@
 import frappe
 from frappe.utils import today
 from datetime import datetime,timedelta
-
+from frappe.utils.data import nowdate
+from frappe.utils.password import get_decrypted_password
+from nextpty_auto_server_setup.apis.payment import create_payment_for_site
 from nextpty_auto_server_setup.apis.site import activate_site
 from nextpty_auto_server_setup.www.signup import create_subscription
 
@@ -101,15 +103,36 @@ def deactivate_subscription_end_sites(subscription_end_sites):
     from nextpty_auto_server_setup.apis.site import deactivate_site
     if subscription_end_sites:
         for site_name in subscription_end_sites:
-            return deactivate_site(site_name)
+            if check_auto_renew(site_name):
+                continue
+            else:
+                return deactivate_site(site_name)
    
 
 def deactivate_trial_subscription_end_sites(trial_subscription_end_sites):
     from nextpty_auto_server_setup.apis.site import deactivate_site
     if trial_subscription_end_sites:
         for site_name in trial_subscription_end_sites:
-            return deactivate_site(site_name)
+            if check_auto_renew(site_name):
+                continue
+            else:
+                return deactivate_site(site_name)
 
+def check_auto_renew(site_name):
+    site_data = frappe.get_all("Site Subscription",filters={"parent":site_name, "parenttype":"Site"},fields=["subscription","is_active","is_trial","creation"])
+    if site_data:
+        last_subscription_data = sorted(site_data, key=lambda x: x["creation"], reverse=True)[0]
+        
+        cancelled = frappe.db.get_value("Subscription", last_subscription_data["subscription"], ["custom_is_cancelled"])
+        saved_card = frappe.db.get_value("Croem Saved Card Token", filters={"user": frappe.session.user, "site_name": site_name}, fieldname=['name'])
+        if cancelled or not saved_card:
+            return False
+        else:
+            token = get_decrypted_password("Croem Saved Card Token", saved_card, "token") or ""
+            res = create_payment_for_site("HOSTING STANDARD", "monthly", site_name, token, is_trial=0, user=frappe.session.user, is_new=0, save_card=0)
+            return True if res.get('status') == "Success" else False
+    else:
+        return False
 
 @frappe.whitelist()
 def re_new_subscription(site, subscription_type, plan, is_trial=0):
@@ -118,7 +141,7 @@ def re_new_subscription(site, subscription_type, plan, is_trial=0):
         site = sitename in frappe doc,
         subscription_type = e.g. monthly, yearly etc.
         plan = e.g. gold, platinum, trial etc.
-        is_trial = if this is a trial period or give any trial to customer using cupon code or etc.
+        is_trial = if this is a trial period or give any trial to customer using coupon code or etc.
     """
     try:
         is_trial = 1 if plan == "Trial" else 0
@@ -167,7 +190,6 @@ def re_new_subscription(site, subscription_type, plan, is_trial=0):
             
     except Exception as e:
         frappe.log_error("Error: While re new subscription for site.", f"Error: {e}\nsite: {site}\nsubceription_type: {subscription_type}\nplan: {plan}\nis_trial: {is_trial}")
-
 
 @frappe.whitelist()
 def check_and_send_mail_for_expiring_subscription():
@@ -235,10 +257,6 @@ def check_and_send_mail_for_expiring_subscription():
             )
 
 
-
-
-
-
                 # email_addresses = frappe.get_all("Portal User",filters={'parent':entry.get("party")},fields=["email"])
 
                 # recipients = [user.get("email") for user in email_addresses if user.get("email")]
@@ -258,3 +276,19 @@ def check_and_send_mail_for_expiring_subscription():
                 #         subject=subject,
                 #         message=message
                 #     )
+                
+@frappe.whitelist()
+def cancel_subscription(subscription_name):
+    s_user = frappe.session.user
+    try:
+        frappe.set_user("Administrator")
+        doc = frappe.get_doc("Subscription", subscription_name)
+        doc.status = "Cancelled"
+        doc.cancelation_date = nowdate()
+        doc.custom_is_cancelled = 1
+        doc.save()
+        frappe.db.commit()
+        frappe.set_user(s_user)
+    except Exception as e:
+        frappe.log_error("Error: While cancel subscription", f"Error: {e}\nsubscription_name: {subscription_name}")
+        frappe.set_user(s_user)

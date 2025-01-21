@@ -1,7 +1,7 @@
 {
  "actions": [],
  "allow_rename": 1,
- "autoname": "field:user",
+ "autoname": "format:{user-{##}",
  "creation": "2025-01-18 17:04:22.223906",
  "doctype": "DocType",
  "engine": "InnoDB",
@@ -10,7 +10,8 @@
   "token",
   "account_number",
   "card_holder_name",
-  "card_number"
+  "card_number",
+  "site_name"
  ],
  "fields": [
   {
@@ -39,15 +40,21 @@
    "fieldname": "card_number",
    "fieldtype": "Data",
    "label": "Card Number"
+  },
+  {
+   "fieldname": "site_name",
+   "fieldtype": "Link",
+   "label": "Site Name",
+   "options": "Site"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-01-20 11:01:42.967411",
+ "modified": "2025-01-21 13:23:15.460022",
  "modified_by": "Administrator",
  "module": "Nextpty Auto Server Setup",
  "name": "Croem Saved Card Token",
- "naming_rule": "By fieldname",
+ "naming_rule": "Expression",
  "owner": "Administrator",
  "permissions": [
   {
