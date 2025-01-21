@@ -21,6 +21,9 @@ app_license = "mit"
 # 	}
 # ]
 
+# on on_session_creation
+on_session_creation="nextpty_auto_server_setup.apis.login.redirect_to_signup"
+
 # Includes in <head>
 # ------------------
 

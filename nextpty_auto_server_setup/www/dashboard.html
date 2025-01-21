@@ -57,7 +57,8 @@
             <div class="list-group">
                 <a href="#allSites" class="list-group-item list-group-item-action" id="allSitesLink" style="border-radius: 0 !important;"><i class="fa fa-globe" style="margin-right: 10px;"></i>My All Sites</a>
                 <a href="#createNewSite" class="list-group-item list-group-item-action" id="createNewSiteLink" style="border-radius: 0 !important;"><i class="fa fa-plus-circle" style="margin-right: 10px;"></i>Create New Site</a>
-                <a href="#renewsitesubscription" class="list-group-item list-group-item-action" id="renewSiteSubscription" style="border-radius: 0 !important;"><i class="fa fa-sync-alt" style="margin-right: 10px;"></i>Renew Site Subscription</a>
+                <!-- <a href="#renewsitesubscription" class="list-group-item list-group-item-action" id="renewSiteSubscription" style="border-radius: 0 !important;"><i class="fa fa-sync-alt" style="margin-right: 10px;"></i>Renew Site Subscription</a> -->
+                <a href="#paymenthistory" class="list-group-item list-group-item-action" id="paymentHistoryLink" style="border-radius: 0 !important;"><i class="fa fa-history" style="margin-right: 10px;"></i>Payment History</a>
             </div>
         </div>
 
@@ -73,6 +74,7 @@
                             <th>Status</th>
                             <th>Subscription</th>
                             <th>Subscription Expiry Date</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -86,9 +88,13 @@
                     Your browser does not support iframes.
                 </iframe>
             </div>
-            <div id="renewsitesubscription" class="tab-content" style="display:none; height: 100vh;">
+            <!-- <div id="renewsitesubscription" class="tab-content" style="display:none; height: 100vh;">
                 <iframe src="re-new-site-subscription.html" width="100%" height="100vh" frameborder="0" style="height: 100vh;">
-                    <!-- Your browser does not support iframes. -->
+                </iframe>
+            </div> -->
+            <div id="paymenthistory" class="tab-content" style="display: none;height: 100vh;">
+                <iframe src="paymenthistory.html" width="100%" height="100vh" frameborder="0" style="height: 100vh;">
+                    Your browser does not support iframes.
                 </iframe>
             </div>
         </div>
@@ -96,32 +102,109 @@
 </div>
 
 <script>
+    function fetchPaymentHistory() {
+        frappe.call({
+            method: "nextpty_auto_server_setup.apis.site.get_user_payments",
+            callback: function (response) {
+                console.log("Helloooo???",'bhghbfdb');
+                const data=response.message;
+
+                const iframe = document.querySelector("#paymenthistory iframe");
+
+                if (iframe && iframe.contentDocument) {
+                const paymentTableBody = iframe.contentDocument.querySelector("#paymentTable tbody");
+                if (paymentTableBody) {
+                    paymentTableBody.innerHTML = ""; 
+                    data.forEach(payment => {
+                        const row = `
+                            <tr>
+                                <td>${payment.name}</td>
+                                <td>${payment.posting_date}</td>
+                                <td>${payment.paid_amount}</td>
+                                <td>
+                                    <button class="btn btn-primary btn-sm" onclick="downloadInvoice('${payment.name}')">Download Invoice</button>
+                                </td>
+                            </tr>
+                        `;
+                        paymentTableBody.innerHTML += row;
+                    });
+                }
+            }
+            },
+            error: function (error) {
+                console.error("Error fetching payment history:", error);
+            }
+        });
+    }
+
+    // function downloadInvoice(paymentName) {
+    //     window.open(`/api/method/frappe.utils.print_format.download_pdf?doctype=Payment%20Entry&name=${paymentName}&format=Standard&no_letterhead=1&letterhead=No%20Letterhead&settings=%7B%7D`);
+    // }
     function fetchSiteData() {
             frappe.call({
                 method: "nextpty_auto_server_setup.apis.site.get_site_data",
                 callback: function(response) {
-                    const data = response.message;
-                    console.log(data);
-                    const sitesTableBody = document.querySelector("#sitesTable tbody");
-                    sitesTableBody.innerHTML = "";
-                    data.forEach(site => {
-                        const subscriptionClass = site.subscription === "Active" ? "label-active" : "label-inactive";
+                    if(response.message.redirect){
+                        window.location.href = response.message.redirect;
+                    }
+                    else{
+                        const data = response.message;
+                        console.log(data);
+                        const sitesTableBody = document.querySelector("#sitesTable tbody");
+                        sitesTableBody.innerHTML = "";
+                        data.forEach(site => {
+                            const subscriptionClass = site.subscription === "Active" ? "label-active" : "label-inactive";
 
-                        const row = `
-                            <tr>
-                                <td>${site.site_name}</td>
-                                <td>${site.status}</td>
-                                <td><span class="subscription-label ${subscriptionClass}">${site.subscription}</span></td>
-                                <td>${site.expiry_date}</td>
-                            </tr>
-                        `;
-                        sitesTableBody.innerHTML += row;
-                    });
+                            const actionButton = site.subscription === "Active"
+                                ? `<button class="btn btn-danger btn-sm" onclick="cancelSubscription('${site.name}')">Cancel Subscription</button>`
+                                : `<button class="btn btn-success btn-sm" onclick="renewSubscription('${site.name}')">Renew Subscription</button>`;
+
+
+                            const row = `
+                                <tr>
+                                    <td>${site.site_name}</td>
+                                    <td>${site.status}</td>
+                                    <td><span class="subscription-label ${subscriptionClass}">${site.subscription}</span></td>
+                                    <td>${site.expiry_date}</td>
+                                    <td>${actionButton}</td>
+
+                                </tr>
+                            `;
+                            sitesTableBody.innerHTML += row;
+                        });
+                    }
                 },
                 error: function(error) {
                     console.error("Error fetching site data:", error);
                 }
             });
+        }
+        function cancelSubscription(siteName) {
+            console.log(`Cancel subscription for: ${siteName}`);
+            // Add your logic  to handle cancellation
+        }
+
+        function renewSubscription(siteName) {
+            console.log(`Renew subscription for: ${siteName}`);
+            frappe.call({
+                    method: "nextpty_auto_server_setup.schedular.subscription.re_new_subscription",
+                    args: {
+                        site: formData.site,
+                        subscription_type: formData.subscription_type,
+                        plan: formData.plan
+                    },
+                    callback: function(response) {
+                        // alert('Signup successful!');
+                        console.log("response", response)
+                        // Reset the form
+                        signupForm.reset();
+                    },
+                    error: function(error) {
+                        alert('Error: ' + (error.message || 'Something went wrong!'));
+                    },
+                    freeze: true,
+                    freeze_message: "Processing your request..."
+                });
         }
 
 
@@ -129,12 +212,14 @@
         
     const allSitesLink = document.getElementById("allSitesLink");
     const createNewSiteLink = document.getElementById("createNewSiteLink");
-    const renewSiteSubscriptionLink = document.getElementById("renewSiteSubscription");
+    const paymentHistoryLink = document.getElementById("paymentHistoryLink");
+    // const renewSiteSubscriptionLink = document.getElementById("renewSiteSubscription");
 
     function setActiveTab(activeTab) {
         allSitesLink.classList.remove("active");
         createNewSiteLink.classList.remove("active");
-        renewSiteSubscriptionLink.classList.remove("active");
+        paymentHistoryLink.classList.remove("active");
+        // renewSiteSubscriptionLink.classList.remove("active");
 
         activeTab.classList.add("active");
     }
@@ -148,7 +233,7 @@
 
         document.getElementById("allSites").style.display = "block";
         document.getElementById("createNewSite").style.display = "none";
-        document.getElementById("renewsitesubscription").style.display = "none";
+        document.getElementById("paymenthistory").style.display = "none";
         fetchSiteData();
     });
 
@@ -158,17 +243,26 @@
 
         document.getElementById("createNewSite").style.display = "block";
         document.getElementById("allSites").style.display = "none";
-        document.getElementById("renewsitesubscription").style.display = "none";
+        document.getElementById("paymenthistory").style.display = "none";
 
     });
-    renewSiteSubscriptionLink.addEventListener("click", function() {
+    paymentHistoryLink.addEventListener("click",function(){
         event.preventDefault();
-        setActiveTab(renewSiteSubscriptionLink);
+        setActiveTab(paymentHistoryLink);
 
-        document.getElementById("renewsitesubscription").style.display = "block";
+        document.getElementById("paymenthistory").style.display = "block";
         document.getElementById("createNewSite").style.display = "none";
         document.getElementById("allSites").style.display = "none";
-    });    
+        fetchPaymentHistory();
+    })
+    // renewSiteSubscriptionLink.addEventListener("click", function() {
+    //     event.preventDefault();
+    //     setActiveTab(renewSiteSubscriptionLink);
+
+    //     document.getElementById("renewsitesubscription").style.display = "block";
+    //     document.getElementById("createNewSite").style.display = "none";
+    //     document.getElementById("allSites").style.display = "none";
+    // });    
     });
 </script>
 {% endblock %}

@@ -1,0 +1,39 @@
+{% extends "templates/base.html" %}
+{% block title %}Payment History{% endblock %}
+{% block head_include %}
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <table class="table table-bordered" id="paymentTable" style="margin-top: 20px;">
+        <thead>
+            <tr>
+                <th>Payment Entry</th>
+                <th>Posting Date</th>
+                <th>Paid Amount</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Payment entries will be dynamically added here -->
+        </tbody>
+    </table>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+            var navbar = document.querySelector('.navbar');
+            if (navbar) {
+                navbar.style.display = 'none';
+            }
+
+            var footer = document.querySelector('.web-footer');
+            if (footer) {
+                footer.style.display = 'none';
+            }
+        });
+
+        function downloadInvoice(paymentName) {
+        window.open(`/api/method/nextpty_auto_server_setup.apis.site.download_invoice?payment_entry_name=${paymentName}`);
+    }
+</script>
+{% endblock %}

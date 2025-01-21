@@ -197,9 +197,11 @@ def set_frappe_cloud_logs(status, site_name, request, response, type_of_api):
         frappe.log_error("Error: While Set FC API Log", f"site name: {site_name}\nstatus: {status}\nrequest: {request}\ntype_of_api: {type_of_api}\nresponse: {response}\nError: {e}")
 
 
-@frappe.whitelist()
+@frappe.whitelist(allow_guest=True)
 def get_site_data():
     session_user = frappe.session.user
+    if session_user=="Guest":
+        return {"redirect": "/signup"}
 
     customers = frappe.get_all("Portal User",filters={"user":session_user,"parenttype":"Customer"},fields=["parent"])
     print("\n\nSession User",session_user)
@@ -262,3 +264,49 @@ def get_site_data():
             })
     print(site_info)
     return site_info
+
+
+@frappe.whitelist()
+def get_user_payments():
+    user = frappe.session.user
+    if user == "Guest":
+        frappe.throw("You need to log in to view payment history.")
+    payments = frappe.db.get_list(
+        "Payment Entry",
+        filters={"owner": user},
+        fields=["name", "posting_date", "paid_amount", "reference_name"],
+        order_by="posting_date desc"
+    )
+    print("\n\nPayments",payments)
+    return payments
+
+from frappe.utils.print_format import download_pdf
+
+@frappe.whitelist()
+def download_invoice(payment_entry_name):
+    payment_entry = frappe.get_doc("Payment Entry", payment_entry_name)
+    
+    # Check if the logged-in user is the owner
+    if frappe.session.user != payment_entry.owner:
+        frappe.throw("You do not have permission to download this invoice.")
+
+    try:
+        # Generate the PDF content
+        pdf_content = download_pdf(
+            doctype="Payment Entry",
+            name=payment_entry_name,
+            format=None,  # Ensure this format exists
+            no_letterhead=1,    # Use this only if letterhead is not required
+        )
+
+        if not pdf_content:
+            frappe.throw("Failed to generate PDF. Please check the print format.")
+
+        # Set up the response for file download
+        frappe.local.response.filecontent = pdf_content
+        frappe.local.response.filename = f"Invoice_{payment_entry_name}.pdf"
+        frappe.local.response.type = "download"
+
+    except Exception as e:
+        frappe.log_error(f"Error in download_invoice: {str(e)}", "PDF Generation Error")
+        frappe.throw("An error occurred while generating the invoice. Please contact support.")
