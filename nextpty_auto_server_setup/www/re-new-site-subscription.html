@@ -107,7 +107,7 @@
                 },
                 callback: function (res) {
                     console.log("payment res", res)
-                    if (res.message['status']){
+                    if (res.message['status'] === "Success"){
                         window.location = "/dashboard"
                         window.location.reload()
                     }

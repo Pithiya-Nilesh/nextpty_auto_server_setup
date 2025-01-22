@@ -183,14 +183,17 @@ def re_new_subscription(site, subscription_type, plan, is_trial=0):
                         frappe.msgprint(title= "Success", message= "Your Site Subscription is renewed", indicator= "green")
                         return True
             else:
-                return frappe.throw("Customer Not Found", "Customer not found for this site.")
+                frappe.throw("Customer Not Found", "Customer not found for this site.")
+                return False
         else:
-            return frappe.throw("Customer Not Found", "Customer not found for this site.")
+            frappe.throw("Customer Not Found", "Customer not found for this site.")
+            return False
 
-            
+             
     except Exception as e:
         frappe.log_error("Error: While re new subscription for site.", f"Error: {e}\nsite: {site}\nsubscription_type: {subscription_type}\nplan: {plan}\nis_trial: {is_trial}")
-
+        return False
+    
 @frappe.whitelist()
 def check_and_send_mail_for_expiring_subscription():
     print()
