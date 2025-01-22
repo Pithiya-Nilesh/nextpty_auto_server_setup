@@ -46,7 +46,7 @@ def get_user_payments():
     payment_entries = frappe.db.sql(
         """
         SELECT 
-            pe.name, pe.posting_date, pe.paid_amount, pe.reference_no, pe.reference_date
+            pe.name, pe.posting_date, pe.paid_amount, pe.reference_no, pe.reference_date, pe.creation
         FROM 
             `tabPayment Entry` AS pe
         JOIN 
@@ -55,6 +55,8 @@ def get_user_payments():
             pe.name = per.parent
         WHERE 
             per.reference_name IN %s
+        ORDER BY 
+            pe.creation DESC
         """,
         (tuple(sales_invoice_list),),
         as_dict=True
