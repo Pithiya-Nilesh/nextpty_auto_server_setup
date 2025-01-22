@@ -9,9 +9,9 @@ import requests
 def signup(formdata):
     data = json.loads(formdata)
 
-    recaptcha_response = data["recaptcha_response"]
-    if not verify_recaptcha(recaptcha_response):
-        frappe.throw("reCAPTCHA verification failed. Please try again.")
+    # recaptcha_response = data["recaptcha_response"]
+    # if not verify_recaptcha(recaptcha_response):
+    #     frappe.throw("reCAPTCHA verification failed. Please try again.")
 
     site_name = re.sub(r'[^a-zA-Z0-9-]', '', data["site_name"].lower().replace(" ", "-"))
     
