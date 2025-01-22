@@ -133,7 +133,7 @@ def create_subscription(data, customer, plan="Trial", is_trial=0, subscription_t
             si.subscription = doc.name
             si.status = "Paid"
             si.due_date = today()
-            si.currency = "INR"
+            si.currency = "USD"
             si.selling_price_list = "Standard Selling"
             amount = frappe.db.get_value("Subscription Plan", plan, ['cost'])
             item = frappe.db.get_value("Subscription Plan", plan, ['item'])
@@ -151,8 +151,8 @@ def create_subscription(data, customer, plan="Trial", is_trial=0, subscription_t
             pe.party_type = "Customer"
             pe.party = customer
             abbr = "N"
-            pe.paid_to = f"1201 - Banco General - 0301251505 - {abbr}"
-            # pe.paid_to = "Bank Account - SD"
+            # pe.paid_to = f"1201 - Banco General - 0301251505 - {abbr}"
+            pe.paid_to = "Bank Account - SD"
             pe.target_exchange_rate = 1
             pe.paid_amount= amount
             pe.received_amount = amount
