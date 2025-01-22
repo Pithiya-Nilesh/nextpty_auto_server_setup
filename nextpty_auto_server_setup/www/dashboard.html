@@ -18,6 +18,13 @@
         border-collapse: collapse;
         margin-top: 40px;
     }
+    #sitesTable thead th {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        background-color: #f8f9fa;
+    }
+
 
     .container {
         min-width: -webkit-fill-available;
@@ -129,7 +136,7 @@
         <!-- Main Content -->
         <div class="col-md-9 col-lg-10 content" style="height: 100vh;">
 
-            <div id="allSites" class="tab-content" style="height: 100vh;">
+            <div id="allSites" class="tab-content" style="height: 100vh;overflow-x: auto;">
                 <h4 style="width:82%;margin:3rem auto 0 auto;">All Sites</h4>
                 <table class="table table-bordered" id="sitesTable">
                     <thead>
