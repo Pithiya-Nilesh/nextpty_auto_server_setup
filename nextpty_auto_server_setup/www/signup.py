@@ -3,6 +3,7 @@ import re
 import frappe, json
 from frappe.auth import LoginManager
 import requests
+from frappe.utils import today
 
 
 
@@ -101,7 +102,7 @@ def create_customer(data, user):
         frappe.throw(msg=e, title=frappe._("Somthing Want wrong"))
 
 
-def create_subscription(data, customer, plan="Trial", is_trial=1, subscription_type="monthly"):
+def create_subscription(data, customer, plan="Trial", is_trial=0, subscription_type="monthly"):
     try:
         doc = frappe.new_doc("Subscription")
         doc.party_type = "Customer"
@@ -124,6 +125,48 @@ def create_subscription(data, customer, plan="Trial", is_trial=1, subscription_t
         })
         doc.insert(ignore_permissions=True)
         frappe.db.commit()
+        if not is_trial:
+            s_user = frappe.session.user
+            frappe.set_user('Administrator')
+            si = frappe.new_doc("Sales Invoice")
+            si.customer = customer
+            si.subscription = doc.name
+            si.status = "Paid"
+            si.due_date = today()
+            si.currency = "INR"
+            si.selling_price_list = "Standard Selling"
+            amount = frappe.db.get_value("Subscription Plan", plan, ['cost'])
+            item = frappe.db.get_value("Subscription Plan", plan, ['item'])
+            si.append('items', {
+                "item_code": item,
+                "qty": 1,
+                "rate": amount
+            })
+            si.insert(ignore_permissions=True)
+            si.submit()
+            frappe.db.commit()
+            
+            pe = frappe.new_doc("Payment Entry")
+            pe.payment_type = "Receive"
+            pe.party_type = "Customer"
+            pe.party = customer
+            abbr = "N"
+            # pe.paid_to = f"1201 - Banco General - 0301251505 - {abbr}"
+            pe.paid_to = "Bank Account - SD"
+            pe.target_exchange_rate = 1
+            pe.paid_amount= amount
+            pe.received_amount = amount
+            pe.append("references",{
+                "reference_doctype": "Sales Invoice",
+                "reference_name": si.name
+            })
+            pe.reference_no = f"{doc.name}-{customer}"
+            pe.reference_date = today()
+            pe.insert(ignore_permissions=True)
+            pe.submit()
+            frappe.db.commit()
+            frappe.set_user(s_user)
+            
         return doc.name
     
     except Exception as e:

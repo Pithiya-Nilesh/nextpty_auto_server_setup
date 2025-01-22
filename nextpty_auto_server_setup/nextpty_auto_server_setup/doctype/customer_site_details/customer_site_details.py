@@ -15,7 +15,7 @@ class CustomerSiteDetails(Document):
      
 
 def check_status_and_create_site(self):
-	# return
+	return
 	for site in self.site_details:
 		if site.status == "Creation Pending":
 			frappe.enqueue("nextpty_auto_server_setup.apis.site.create_site_in_frappe_cloud", site_name=site.site_name, timeout=1000)

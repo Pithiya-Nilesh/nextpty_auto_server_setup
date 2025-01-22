@@ -189,7 +189,7 @@ def re_new_subscription(site, subscription_type, plan, is_trial=0):
 
             
     except Exception as e:
-        frappe.log_error("Error: While re new subscription for site.", f"Error: {e}\nsite: {site}\nsubceription_type: {subscription_type}\nplan: {plan}\nis_trial: {is_trial}")
+        frappe.log_error("Error: While re new subscription for site.", f"Error: {e}\nsite: {site}\nsubscription_type: {subscription_type}\nplan: {plan}\nis_trial: {is_trial}")
 
 @frappe.whitelist()
 def check_and_send_mail_for_expiring_subscription():
@@ -288,14 +288,14 @@ def cancel_subscription(subscription_name, site_name):
         doc.custom_is_cancelled = 1
         doc.save()
         frappe.db.commit()
-        frappe.set_user(s_user)
         
         d = frappe.db.get_value("Croem Saved Card Token", filters={"user": s_user, "site_name": site_name}, fieldname=['name'])
         if d:
             saved_data = frappe.get_doc("Croem Saved Card Token", d)
             saved_data.delete()
             frappe.db.commit()
-        
+        frappe.set_user(s_user)
+
     except Exception as e:
         frappe.log_error("Error: While cancel subscription", f"Error: {e}\nsubscription_name: {subscription_name}")
         frappe.set_user(s_user)

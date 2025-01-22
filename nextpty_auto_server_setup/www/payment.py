@@ -9,8 +9,10 @@ import xml.etree.ElementTree as ET
 
 
 @frappe.whitelist(allow_guest=True)
-def get_payment_popup(user=frappe.session.user, site_name=""):
+def get_payment_popup(user="", site_name=""):
     try:
+        user = user if user else frappe.session.user
+        print("\n\n user", user)
         settings = frappe.get_doc("Croem Settings")
         if not settings.enable:
             frappe.throw("Please Enable Croem Settings", "Croem Settings Not Enable") 
@@ -23,8 +25,10 @@ def get_payment_popup(user=frappe.session.user, site_name=""):
         token = ""
         if user and site_name:
             name = frappe.db.get_value("Croem Saved Card Token", filters={"user": user, "site_name": site_name}, fieldname=['name'])
+            print("\n\n name", name)
+
             if name:
-                token = get_decrypted_password("Croem Saved Card Token", name, "token")
+                token = get_decrypted_password("Croem Saved Card Token", f"{name}", "token", raise_exception=False) or ""
             
         # if frappe.db.get_value("Croem Save Token", user, fieldname=['name']):
         #     token = get_decrypted_password("Croem Save Token", user, "token")
@@ -48,15 +52,10 @@ def get_payment_popup(user=frappe.session.user, site_name=""):
 
 @frappe.whitelist(allow_guest=True)
 def create_payment(plan, subscription_type, site, popup_response, is_trial=0, user=frappe.session.user, is_new=0, save_card=1):
-    try:
-        print("\n\n res pop ", popup_response)
-        print("\n\n res plan ", plan)
-        print("\n\n res subscription_type ", subscription_type)
-        print("\n\n res site ", site)
-        
+    try:        
         if save_card:
             popup_response = json.loads(popup_response)
-            save_card_details(user, popup_response)
+            save_card_details(user, popup_response, site)
             token = popup_response.get("AccountToken")
         else:
             token = popup_response
@@ -72,10 +71,6 @@ def create_payment(plan, subscription_type, site, popup_response, is_trial=0, us
         
         amount = frappe.db.get_value("Subscription Plan", plan, fieldname=['cost'])
         
-        # token = ""
-        # if frappe.db.get_value("Croem Save Token", user, fieldname=['name']):
-        #     token = get_decrypted_password("Croem Save Token", user, "token")
-
         soap_body = f'''<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tem="http://tempuri.org/">
         <soapenv:Header/>
         <soapenv:Body>
@@ -120,11 +115,11 @@ def create_payment(plan, subscription_type, site, popup_response, is_trial=0, us
                 return {"status": "Success"}
         else:
             print("The description is not Approved or not found.")
-            {"status": "Failed", "msg": response.text}
+            return {"status": "Failed", "msg": response.text}
         
     except Exception as e:
         frappe.log_error("Error: While Create Payment", f"Error: {e}")
-        {"status": "Failed", "msg": e}
+        return {"status": "Failed", "msg": e}
     
 # SUCCESS RESPONSE
 """  
@@ -152,7 +147,7 @@ def create_payment(plan, subscription_type, site, popup_response, is_trial=0, us
 </soap:Envelope>
 """
 
-def save_card_details(user, popup_response):
+def save_card_details(user, popup_response, site_name):
     try:
         doc = frappe.new_doc("Croem Saved Card Token")
         doc.user = user
@@ -160,6 +155,7 @@ def save_card_details(user, popup_response):
         doc.account_number = popup_response.get("AccountNumber")
         doc.card_holder_name = popup_response.get("CardHolderName")
         doc.card_number = popup_response.get("CardNumber")
+        doc.site_name = site_name
         doc.insert(ignore_permissions=True)
         frappe.db.commit()
         

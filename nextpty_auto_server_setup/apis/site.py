@@ -204,7 +204,6 @@ def get_site_data():
         return {"redirect": "/signup"}
 
     customers = frappe.get_all("Portal User",filters={"user":session_user,"parenttype":"Customer"},fields=["parent"])
-    print("\n\nSession User",session_user)
 
     session_user_sites_details = []
     for customer in customers:
@@ -269,7 +268,6 @@ def get_site_data():
                 "expiry_date": subscription_end_date.strftime('%d-%m-%Y') if subscription_end_date else None,
                 "subscription_name": subscription_name
             })
-    print(site_info)
     return site_info
 
 def get_save_card(session_user, site_name):
