@@ -230,7 +230,7 @@
                         const subscriptionClass = subscriptionClasses[site.subscription] || "label-inactive";
 
                         const actionButton = site.subscription === "Active" || site.subscription === "Trialling"
-                            ? `<button class="btn btn-danger btn-sm" onclick="cancelSubscription('${site.subscription_name}')">Cancel Subscription</button>`
+                            ? `<button class="btn btn-danger btn-sm" onclick="cancelSubscription('${site.subscription_name}', '${site.site_name}')">Cancel Subscription</button>`
                             : `<button class="btn btn-success btn-sm" onclick="renewSubscription('${site.site_name}')">Renew Subscription</button>`;
 
                         const is_trial = site.is_trial ? "Yes" : "No"
@@ -269,21 +269,32 @@
             }
         });
     }
-    
-    function cancelSubscription(subscription_name) {
+
+    function cancelSubscription(subscription_name, site_name) {
         console.log(`Cancel subscription for: ${subscription_name}`);
-        // Add your logic  to handle cancellation
-        frappe.call({
-            method: "nextpty_auto_server_setup.schedular.subscription.cancel_subscription",
-            args: {
-                subscription_name: subscription_name
+
+        frappe.confirm(
+            'As you are cancelling the plan, your saved card details will be deleted, please confirm',
+            () => {
+                frappe.call({
+                    method: "nextpty_auto_server_setup.schedular.subscription.cancel_subscription",
+                    args: {
+                        subscription_name: subscription_name,
+                        site_name: site_name
+                    },
+                    callback: function (res) {
+                        console.log("cancel subscription res : ", res)
+                        window.location.reload()
+                    },
+                    freeze: true,
+                    freeze_message: "Please wait we are cancelling you subscription"
+                })
             },
-            callback: function (res) {
-                console.log("cancel subscription res : ", res)
-            },
-            freeze: true,
-            freeze_message: "Please wait we are cancelling you subscription"
-        })
+            () => {
+                // Action to take if the user cancels
+                console.log('User canceled');
+            }
+        );
     }
 
     function renewSubscription(siteName) {

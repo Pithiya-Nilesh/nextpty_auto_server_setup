@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 import re
 import frappe, json
+from frappe.auth import LoginManager
 import requests
 
 
@@ -9,9 +10,9 @@ import requests
 def signup(formdata):
     data = json.loads(formdata)
 
-    # recaptcha_response = data["recaptcha_response"]
-    # if not verify_recaptcha(recaptcha_response):
-    #     frappe.throw("reCAPTCHA verification failed. Please try again.")
+    recaptcha_response = data["recaptcha_response"]
+    if not verify_recaptcha(recaptcha_response):
+        frappe.throw("reCAPTCHA verification failed. Please try again.")
 
     site_name = re.sub(r'[^a-zA-Z0-9-]', '', data["site_name"].lower().replace(" ", "-"))
     
@@ -29,7 +30,13 @@ def signup(formdata):
             if subscription:
                 if create_site_record(data['site_name'], subscription):
                     if create_customer_site_details_record(data, customer):
+                        login_manager = LoginManager()
+                        login_manager.login_as(user)
+                        frappe.db.commit()
                         frappe.msgprint(title=frappe._('Your site creation is in progress...'), msg=frappe._(f"Soon, we will share the credentials and the URL of your site with you via email at {data['contact_email']}."))
+                        frappe.local.response["type"] = "redirect"
+                        frappe.local.response["location"] = "/dashboard"
+                        return
 
 @frappe.whitelist()
 def site_exist(site_name):

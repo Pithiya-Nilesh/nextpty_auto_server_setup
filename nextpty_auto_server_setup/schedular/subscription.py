@@ -278,7 +278,7 @@ def check_and_send_mail_for_expiring_subscription():
                 #     )
                 
 @frappe.whitelist()
-def cancel_subscription(subscription_name):
+def cancel_subscription(subscription_name, site_name):
     s_user = frappe.session.user
     try:
         frappe.set_user("Administrator")
@@ -289,6 +289,13 @@ def cancel_subscription(subscription_name):
         doc.save()
         frappe.db.commit()
         frappe.set_user(s_user)
+        
+        d = frappe.db.get_value("Croem Saved Card Token", filters={"user": s_user, "site_name": site_name}, fieldname=['name'])
+        if d:
+            saved_data = frappe.get_doc("Croem Saved Card Token", d)
+            saved_data.delete()
+            frappe.db.commit()
+        
     except Exception as e:
         frappe.log_error("Error: While cancel subscription", f"Error: {e}\nsubscription_name: {subscription_name}")
         frappe.set_user(s_user)
