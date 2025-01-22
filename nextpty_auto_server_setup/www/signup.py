@@ -102,7 +102,7 @@ def create_customer(data, user):
         frappe.throw(msg=e, title=frappe._("Somthing Want wrong"))
 
 
-def create_subscription(data, customer, plan="Trial", is_trial=0, subscription_type="monthly"):
+def create_subscription(data, customer, plan="Trial", is_trial=1, subscription_type="monthly"):
     try:
         doc = frappe.new_doc("Subscription")
         doc.party_type = "Customer"
