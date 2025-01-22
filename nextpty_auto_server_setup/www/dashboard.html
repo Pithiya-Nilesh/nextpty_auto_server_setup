@@ -238,9 +238,15 @@
 
                         const subscriptionClass = subscriptionClasses[site.subscription] || "label-inactive";
 
-                        const actionButton = site.subscription === "Active" || site.subscription === "Trialling"
+                        const actionButton = site.subscription === "Active"
                             ? `<button class="btn btn-danger btn-sm" onclick="cancelSubscription('${site.subscription_name}', '${site.site_name}')">Cancel Subscription</button>`
-                            : `<button class="btn btn-success btn-sm" onclick="renewSubscription('${site.site_name}')">Renew Subscription</button>`;
+                            : site.subscription === "Cancelled"
+                            ? `<button class="btn btn-success btn-sm" onclick="renewSubscription('${site.site_name}')">Reactivate Subscription</button>`
+                            : site.subscription === "Expired"
+                            ? `<button class="btn btn-success btn-sm" onclick="renewSubscription('${site.site_name}')">Renew Subscription</button>`
+                            : site.subscription === "Trialling"
+                            ? `<button class="btn btn-success btn-sm" onclick="renewSubscription('${site.site_name}')">Activate Subscription</button>`
+                            : `<button class="btn btn-success btn-sm" onclick="renewSubscription('${site.site_name}')">Renew Subscription</button>`
 
                         const is_trial = site.is_trial ? "Yes" : "No"
 
