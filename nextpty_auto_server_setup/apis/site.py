@@ -69,12 +69,12 @@ def activate_site(site_name):
             if response.status_code == 200:
                 status = "Success"
                 response = response.text
-                return True
             else:
                 status = "Failed"
                 response = response.text
                 
             set_frappe_cloud_logs(status, site_name, data, response, "Activate Site")
+            return True if status == "Success" else False
         else:
             return True
         
@@ -85,28 +85,33 @@ def activate_site(site_name):
 @frappe.whitelist()
 def deactivate_site(site_name):
     try:
-        frappe_credentials = frappe.get_single("Frappe Cloud Credentials")
-        
-        url = f"{frappe_credentials.url}/api/method/press.api.site.deactivate"
-        
-        headers = {
-            "X-Press-Team": frappe_credentials.team,
-            "Authorization": f"""token {frappe_credentials.api_key}:{get_decrypted_password("Frappe Cloud Credentials", "Frappe Cloud Credentials", "api_secret")}"""
-        }
-        
-        data = {
-            "name": f"{site_name}.frappe.cloud"
-        }
-
-        response = requests.post(url, headers=headers, json=data)
-        if response.status_code == 200:
-            status = "Success"
-            response = response.text
-        else:
-            status = "Failed"
-            response = response.text
+        status = check_site_status(site_name)
+        if status == "Active" or status == "Broken":
+            frappe_credentials = frappe.get_single("Frappe Cloud Credentials")
             
-        set_frappe_cloud_logs(status, site_name, data, response, "Deactivate Site")
+            url = f"{frappe_credentials.url}/api/method/press.api.site.deactivate"
+            
+            headers = {
+                "X-Press-Team": frappe_credentials.team,
+                "Authorization": f"""token {frappe_credentials.api_key}:{get_decrypted_password("Frappe Cloud Credentials", "Frappe Cloud Credentials", "api_secret")}"""
+            }
+            
+            data = {
+                "name": f"{site_name}.frappe.cloud"
+            }
+
+            response = requests.post(url, headers=headers, json=data)
+            if response.status_code == 200:
+                status = "Success"
+                response = response.text
+            else:
+                status = "Failed"
+                response = response.text
+                
+            set_frappe_cloud_logs(status, site_name, data, response, "Deactivate Site")
+            return True if status == "Success" else False
+        else:
+            return True
         
     except Exception as e:
         frappe.log_error("Error: While Deactivate Site In Frappe Cloud", f"Error: {e}\nsite_name: {site_name}")
