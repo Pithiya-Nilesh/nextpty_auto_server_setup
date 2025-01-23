@@ -83,9 +83,11 @@
                     <div class="col-12">
                         <div class="form-check">
                             <input type="checkbox" class="form-check-input" id="termsCheck">
-                            <label class="form-check-label" for="termsCheck">I accept the <a style="color:#2f7bcc" href="https://nextpty.com/contrato" target="_blank">terms and conditions</a></label>
+                            <label class="form-check-label" for="termsCheck">I accept the <a style="color:#2f7bcc"
+                                    href="https://nextpty.com/contrato" target="_blank">terms and conditions</a></label>
                         </div>
-                        <small id="termsError" class="form-text text-danger" style="display: none;">Please accept the terms and conditions.</small>
+                        <small id="termsError" class="form-text text-danger" style="display: none;">Please accept the
+                            terms and conditions.</small>
                     </div>
                 </div>
 
@@ -101,14 +103,16 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        var navbar = document.querySelector('.navbar');
-        if (navbar) {
-            navbar.style.display = 'none';
-        }
+        if (window.self !== window.top) {
+            var navbar = document.querySelector('.navbar');
+            if (navbar) {
+                navbar.style.display = 'none';
+            }
 
-        var footer = document.querySelector('.web-footer');
-        if (footer) {
-            footer.style.display = 'none';
+            var footer = document.querySelector('.web-footer');
+            if (footer) {
+                footer.style.display = 'none';
+            }
         }
 
         var logged_in_user = frappe.session.user
@@ -260,7 +264,6 @@
                     user: frappe.session.user
                 },
                 callback: function (res) {
-                    console.log("user details", res)
                     var company_name = document.getElementById('company_name').value = res.message['customer']
                     var contact_name = document.getElementById('contact_name').value = res.message['contact_name']
                     var contact_email = document.getElementById('contact_email').value = res.message['contact_email']

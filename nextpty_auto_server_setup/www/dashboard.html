@@ -18,6 +18,7 @@
         border-collapse: collapse;
         margin-top: 40px;
     }
+
     #sitesTable thead th {
         position: sticky;
         top: 0;
@@ -27,9 +28,9 @@
 
 
     .container {
-        min-width: -webkit-fill-available; 
-        min-width: fill-available;       
-        min-width: 100%;            
+        min-width: -webkit-fill-available;
+        min-width: fill-available;
+        min-width: 100%;
     }
 
     .subscription-label {
@@ -165,7 +166,7 @@
             </div>
             <div id="renewsitesubscription" class="tab-content" style="display:none; height: 100vh;">
                 <iframe src="re-new-site-subscription.html" width="100%" height="100vh" frameborder="0"
-                    style="height: 100vh;">
+                    style="height: 100vh;" id="iframe_renew_subscription">
                 </iframe>
             </div>
             <div id="paymenthistory" class="tab-content" style="display: none;height: 100vh;">
@@ -183,7 +184,6 @@
         frappe.call({
             method: "nextpty_auto_server_setup.apis.payment.get_user_payments",
             callback: function (response) {
-                console.log("Helloooo???", 'bhghbfdb');
                 const data = response.message;
 
                 const iframe = document.querySelector("#paymenthistory iframe");
@@ -226,7 +226,6 @@
                 }
                 else {
                     const data = response.message;
-                    console.log(data);
                     const sitesTableBody = document.querySelector("#sitesTable tbody");
                     sitesTableBody.innerHTML = "";
                     data.forEach(site => {
@@ -241,12 +240,12 @@
                         const actionButton = site.subscription === "Active"
                             ? `<button class="btn btn-danger btn-sm" onclick="cancelSubscription('${site.subscription_name}', '${site.site_name}')">Cancel Subscription</button>`
                             : site.subscription === "Cancelled"
-                            ? `<button class="btn btn-success btn-sm" onclick="renewSubscription('${site.site_name}')">Reactivate Subscription</button>`
-                            : site.subscription === "Expired"
-                            ? `<button class="btn btn-success btn-sm" onclick="renewSubscription('${site.site_name}')">Renew Subscription</button>`
-                            : site.subscription === "Trialling"
-                            ? `<button class="btn btn-success btn-sm" onclick="renewSubscription('${site.site_name}')">Activate Subscription</button>`
-                            : `<button class="btn btn-success btn-sm" onclick="renewSubscription('${site.site_name}')">Renew Subscription</button>`
+                                ? `<button class="btn btn-success btn-sm" onclick="renewSubscription('${site.site_name}')">Reactivate Subscription</button>`
+                                : site.subscription === "Expired"
+                                    ? `<button class="btn btn-success btn-sm" onclick="renewSubscription('${site.site_name}')">Renew Subscription</button>`
+                                    : site.subscription === "Trialling"
+                                        ? `<button class="btn btn-success btn-sm" onclick="renewSubscription('${site.site_name}')">Activate Subscription</button>`
+                                        : `<button class="btn btn-success btn-sm" onclick="renewSubscription('${site.site_name}')">Renew Subscription</button>`
 
                         const is_trial = site.is_trial ? "Yes" : "No"
 
@@ -286,7 +285,6 @@
     }
 
     function cancelSubscription(subscription_name, site_name) {
-        console.log(`Cancel subscription for: ${subscription_name}`);
 
         frappe.confirm(
             'As you are cancelling the plan, your saved card details will be deleted, please confirm',
@@ -298,7 +296,6 @@
                         site_name: site_name
                     },
                     callback: function (res) {
-                        console.log("cancel subscription res : ", res)
                         window.location.reload()
                     },
                     freeze: true,
@@ -313,32 +310,58 @@
     }
 
     function renewSubscription(siteName) {
-        console.log(`Renew subscription for: ${siteName}`);
-        window.localStorage.setItem("re_new_sitename", siteName)
+        // window.localStorage.setItem("re_new_sitename", siteName)
+
         document.getElementById("renewsitesubscription").style.display = "block";
         document.getElementById("createNewSite").style.display = "none";
         document.getElementById("allSites").style.display = "none";
 
+        const iframe = document.getElementById("iframe_renew_subscription");
+        // iframe.src = iframe.src;
+        const iframeDoc = iframe.contentWindow.document;
+        const site_name_field = iframeDoc.getElementById("site_name");
+        if (site_name_field) {
+            site_name_field.value = siteName;
+        }
 
-        // frappe.call({
-        //     method: "nextpty_auto_server_setup.schedular.subscription.re_new_subscription",
-        //     args: {
-        //         site: formData.site,
-        //         subscription_type: formData.subscription_type,
-        //         plan: formData.plan
-        //     },
-        //     callback: function (response) {
-        //         // alert('Signup successful!');
-        //         console.log("response", response)
-        //         // Reset the form
-        //         signupForm.reset();
-        //     },
-        //     error: function (error) {
-        //         alert('Error: ' + (error.message || 'Something went wrong!'));
-        //     },
-        //     freeze: true,
-        //     freeze_message: "Processing your request..."
-        // });
+        frappe.call({
+            method: "nextpty_auto_server_setup.www.payment.get_payment_popup",
+            args: {
+                site_name: siteName
+            },
+            callback: function (response) {
+                const container = iframeDoc.getElementById("creditcard-container");
+                if (response.message && response.message.html) {
+                    container.innerHTML = response.message.html;
+
+                    const scripts = container.querySelectorAll("script");
+                    scripts.forEach(script => {
+                        const newScript = iframeDoc.createElement("script");
+                        if (script.src) {
+                            newScript.src = script.src;
+                            newScript.async = true;
+                        } else {
+                            newScript.textContent = script.textContent;
+                        }
+                        iframeDoc.body.appendChild(newScript);
+                    });
+                } else {
+                    container.innerHTML = `
+                <div style="color: red;">
+                    Failed to load the payment form. Please try again later.
+                </div>
+            `;
+                }
+            },
+            error: function (error) {
+                console.error("Error fetching data:", error);
+                iframeDoc.getElementById("creditcard-container").innerHTML = `
+            <div style="color: red;">
+                An error occurred while loading the payment form. Please try again later.
+            </div>
+        `;
+            }
+        });
     }
 
 
@@ -349,7 +372,6 @@
         const paymentHistoryLink = document.getElementById("paymentHistoryLink");
         // const renewSiteSubscriptionLink = document.getElementById("renewSiteSubscription");
 
-        console.log("new", createNewSiteLink)
         function setActiveTab(activeTab) {
             allSitesLink.classList.remove("active");
             createNewSiteLink.classList.remove("active");
@@ -374,7 +396,6 @@
         });
 
         createNewSiteLink.addEventListener("click", function () {
-            console.log("click new site")
             event.preventDefault();
             setActiveTab(createNewSiteLink);
 
@@ -401,7 +422,8 @@
         //     document.getElementById("renewsitesubscription").style.display = "block";
         //     document.getElementById("createNewSite").style.display = "none";
         //     document.getElementById("allSites").style.display = "none";
-        // });    
-    });
+        // });
+
+    })
 </script>
 {% endblock %}
