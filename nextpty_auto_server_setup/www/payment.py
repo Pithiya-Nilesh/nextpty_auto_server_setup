@@ -51,8 +51,8 @@ def get_payment_popup(user="", site_name=""):
 
 
 @frappe.whitelist(allow_guest=True)
-def create_payment(plan, subscription_type, site, popup_response, is_trial=0, user=frappe.session.user, is_new=0, save_card=1):
-    try:        
+def create_payment(plan, subscription_type, site, popup_response, is_trial=0, user=frappe.session.user, is_new=0, save_card=1, renew_from_trial=0):
+    try:
         if save_card:
             popup_response = json.loads(popup_response)
             save_card_details(user, popup_response, site)
@@ -80,7 +80,7 @@ def create_payment(plan, subscription_type, site, popup_response, is_trial=0, us
                 <tem:merchantAccountNumber>{settings.midmerchant}</tem:merchantAccountNumber>
                 <tem:terminalName>{settings.tidterminal}</tem:terminalName>
                 <tem:accountToken>{token}</tem:accountToken>
-                <tem:clientTracking>Pruebas</tem:clientTracking>
+                <tem:clientTracking>f"{site}-{frappe.utils.today()}"</tem:clientTracking>
                 <tem:amount>{amount}</tem:amount>
                 <tem:currencyCode>840</tem:currencyCode>
             </tem:Sale>
@@ -104,15 +104,17 @@ def create_payment(plan, subscription_type, site, popup_response, is_trial=0, us
 
         # Find the <Description> element
         description = root.find(".//temp:Description", namespace)
+        transaction_id = root.find(".//temp:TransactionId", namespace)
+        tracking = root.find(".//temp:Tracking", namespace)
 
         # Check if the description is "Approved"
         if description is not None and description.text == "Approved":
             print("The description is Approved.")
             if not is_new:
-                if re_new_subscription(site, subscription_type, plan, is_trial=0):
+                if re_new_subscription(site, subscription_type, plan, is_trial=0, renew_from_trial=renew_from_trial, transaction_id=transaction_id.text, tracking=tracking.text):
                     return {"status": "Success"}
             else:
-                return {"status": "Success"}
+                return {"status": "Success", "msg": response.text}
         else:
             print("The description is not Approved or not found.")
             return {"status": "Failed", "msg": response.text}
@@ -149,14 +151,20 @@ def create_payment(plan, subscription_type, site, popup_response, is_trial=0, us
 
 def save_card_details(user, popup_response, site_name):
     try:
-        doc = frappe.new_doc("Croem Saved Card Token")
+        exist = frappe.db.get_value("Croem Saved Card Token", filters={'user': user, "site_name": site_name}, fieldname=['name'])
+        if exist:
+            print("\n\n exist", exist)
+            doc = frappe.get_doc("Croem Saved Card Token", exit)
+        else:
+            print("\n\nnot  exist", exist)
+            doc = frappe.new_doc("Croem Saved Card Token")
         doc.user = user
         doc.token = popup_response.get("AccountToken")
         doc.account_number = popup_response.get("AccountNumber")
         doc.card_holder_name = popup_response.get("CardHolderName")
         doc.card_number = popup_response.get("CardNumber")
         doc.site_name = site_name
-        doc.insert(ignore_permissions=True)
+        doc.save(ignore_permissions=True)
         frappe.db.commit()
         
     except Exception as e:

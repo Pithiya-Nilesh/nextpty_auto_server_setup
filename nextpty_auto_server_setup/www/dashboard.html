@@ -240,12 +240,12 @@
                         const actionButton = site.subscription === "Active"
                             ? `<button class="btn btn-danger btn-sm" onclick="cancelSubscription('${site.subscription_name}', '${site.site_name}')">Cancel Subscription</button>`
                             : site.subscription === "Cancelled"
-                                ? `<button class="btn btn-success btn-sm" onclick="renewSubscription('${site.site_name}')">Reactivate Subscription</button>`
+                                ? `<button class="btn btn-success btn-sm" onclick="renewSubscription('${site.site_name}', '${0}')">Reactivate Subscription</button>`
                                 : site.subscription === "Expired"
-                                    ? `<button class="btn btn-success btn-sm" onclick="renewSubscription('${site.site_name}')">Renew Subscription</button>`
+                                    ? `<button class="btn btn-success btn-sm" onclick="renewSubscription('${site.site_name}', '${0}')">Renew Subscription</button>`
                                     : site.subscription === "Trialling"
-                                        ? `<button class="btn btn-success btn-sm" onclick="renewSubscription('${site.site_name}')">Activate Subscription</button>`
-                                        : `<button class="btn btn-success btn-sm" onclick="renewSubscription('${site.site_name}')">Renew Subscription</button>`
+                                        ? `<button class="btn btn-success btn-sm" onclick="renewSubscription('${site.site_name}', '${site.is_trial}')">Activate Subscription</button>`
+                                        : `<button class="btn btn-success btn-sm" onclick="renewSubscription('${site.site_name}', '${0}')">Renew Subscription</button>`
 
                         const is_trial = site.is_trial ? "Yes" : "No"
 
@@ -309,7 +309,7 @@
         );
     }
 
-    function renewSubscription(siteName) {
+    function renewSubscription(siteName, renew_from_trial) {
         // window.localStorage.setItem("re_new_sitename", siteName)
 
         document.getElementById("renewsitesubscription").style.display = "block";
@@ -324,10 +324,15 @@
             site_name_field.value = siteName;
         }
 
+        const renew_from_trial_field = iframeDoc.getElementById("renew_from_trial");
+        if (renew_from_trial_field) {
+            renew_from_trial_field.value = renew_from_trial;
+        }
+
         frappe.call({
             method: "nextpty_auto_server_setup.www.payment.get_payment_popup",
             args: {
-                site_name: siteName
+                site_name: siteName,
             },
             callback: function (response) {
                 const container = iframeDoc.getElementById("creditcard-container");

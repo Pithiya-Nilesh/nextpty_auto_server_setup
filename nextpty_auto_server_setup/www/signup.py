@@ -102,7 +102,7 @@ def create_customer(data, user):
         frappe.throw(msg=e, title=frappe._("Somthing Want wrong"))
 
 
-def create_subscription(data, customer, plan="Trial", is_trial=1, subscription_type="monthly"):
+def create_subscription(data, customer, plan="Trial", is_trial=1, subscription_type="monthly", renew_from_trial=0, transaction_id="", tracking=""):
     try:
         doc = frappe.new_doc("Subscription")
         doc.party_type = "Customer"
@@ -111,6 +111,20 @@ def create_subscription(data, customer, plan="Trial", is_trial=1, subscription_t
             doc.trial_period_start = datetime.today().strftime('%Y-%m-%d')
             trial_period_end_date = datetime.today() + timedelta(days=60)
             doc.trial_period_end = trial_period_end_date.strftime('%Y-%m-%d')
+        
+        elif renew_from_trial:
+            site_data = frappe.get_all("Site Subscription",filters={"parent":data, "parenttype":"Site"},fields=["subscription","is_active","is_trial","creation"])
+            if site_data:
+                last_subscription_data = sorted(site_data, key=lambda x: x["creation"], reverse=False)[0]
+                trial_end_date = frappe.db.get_value("Subscription", last_subscription_data["subscription"], ["trial_period_end"])
+                                
+                if trial_end_date:
+                    start_date = trial_end_date
+                else:
+                    start_date = datetime.today()
+                    
+                doc.start_date = start_date
+                doc.end_date = start_date + timedelta(days=31)
         else:
             doc.start_date = datetime.today().strftime('%Y-%m-%d')
             if subscription_type == "monthly":
@@ -162,7 +176,9 @@ def create_subscription(data, customer, plan="Trial", is_trial=1, subscription_t
                 "total_amount": amount,
                 "allocated_amount": amount
             })
-            pe.reference_no = f"{doc.name}-{customer}"
+            pe.reference_no = transaction_id
+            pe.custom_remarks = 1
+            pe.remarks = f"{doc.name}-{customer}-{tracking}"
             pe.reference_date = today()
             pe.insert(ignore_permissions=True)
             pe.submit()

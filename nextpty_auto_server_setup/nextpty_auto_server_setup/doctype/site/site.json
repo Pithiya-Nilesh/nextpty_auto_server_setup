@@ -7,6 +7,7 @@
  "engine": "InnoDB",
  "field_order": [
   "site_name",
+  "is_renew",
   "site_subscription"
  ],
  "fields": [
@@ -21,11 +22,17 @@
    "fieldtype": "Table",
    "label": "Site Subscription",
    "options": "Site Subscription"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_renew",
+   "fieldtype": "Check",
+   "label": "is Renew"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-11-14 13:10:38.546138",
+ "modified": "2025-01-24 13:51:47.644611",
  "modified_by": "Administrator",
  "module": "Nextpty Auto Server Setup",
  "name": "Site",
