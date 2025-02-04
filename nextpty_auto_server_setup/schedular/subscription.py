@@ -2,7 +2,9 @@
 import frappe
 from frappe.utils import today
 from datetime import datetime,timedelta
-
+from frappe.utils.data import nowdate
+from frappe.utils.password import get_decrypted_password
+from nextpty_auto_server_setup.apis.payment import create_payment_for_site
 from nextpty_auto_server_setup.apis.site import activate_site
 from nextpty_auto_server_setup.www.signup import create_subscription
 
@@ -101,24 +103,60 @@ def deactivate_subscription_end_sites(subscription_end_sites):
     from nextpty_auto_server_setup.apis.site import deactivate_site
     if subscription_end_sites:
         for site_name in subscription_end_sites:
-            return deactivate_site(site_name)
-   
+            if check_auto_renew(site_name):
+                continue
+            else:
+                if deactivate_site(site_name):
+                    remove_is_active_from_site(site_name)
+
+                
 
 def deactivate_trial_subscription_end_sites(trial_subscription_end_sites):
     from nextpty_auto_server_setup.apis.site import deactivate_site
     if trial_subscription_end_sites:
         for site_name in trial_subscription_end_sites:
-            return deactivate_site(site_name)
+            if check_auto_renew(site_name):
+                continue
+            else:
+                if deactivate_site(site_name):
+                    remove_is_active_from_site(site_name)
 
+
+def check_auto_renew(site_name):
+    try:
+        site_data = frappe.get_all("Site Subscription",filters={"parent":site_name, "parenttype":"Site"},fields=["subscription","is_active","is_trial","creation"])
+        if site_data:
+            last_subscription_data = sorted(site_data, key=lambda x: x["creation"], reverse=False)[0]
+            
+            cancelled, customer = frappe.db.get_value("Subscription", last_subscription_data["subscription"], ["custom_is_cancelled", "party"])
+        
+            user = frappe.db.get_all("Portal User", filters={"parent": customer}, fields=['user'])[0]['user']
+
+            saved_card = frappe.db.get_value("Croem Saved Card Token", filters={"user": user, "site_name": site_name}, fieldname=['name'])
+            
+            if cancelled or not saved_card:
+                return False
+            else:
+                already_re_new = already_re_new(site_name)
+                if already_re_new:
+                    return True
+                else:
+                    token = get_decrypted_password("Croem Saved Card Token", saved_card, "token") or ""
+                    res = create_payment_for_site("HOSTING STANDARD", "monthly", site_name, token, is_trial=0, user=user, is_new=0, save_card=0)
+                    return True if res.get('status') == "Success" else False
+        else:
+            return False
+    except Exception as e:
+        frappe.log_error("Error: While check for auto renew", f"Error: {e}\nsitename: {site_name}")
 
 @frappe.whitelist()
-def re_new_subscription(site, subscription_type, plan, is_trial=0):
+def re_new_subscription(site, subscription_type, plan, is_trial=0, renew_from_trial=0, transaction_id="", tracking=""):
     """ re active site subscription 
         params: 
         site = sitename in frappe doc,
         subscription_type = e.g. monthly, yearly etc.
         plan = e.g. gold, platinum, trial etc.
-        is_trial = if this is a trial period or give any trial to customer using cupon code or etc.
+        is_trial = if this is a trial period or give any trial to customer using coupon code or etc.
     """
     try:
         is_trial = 1 if plan == "Trial" else 0
@@ -142,36 +180,42 @@ def re_new_subscription(site, subscription_type, plan, is_trial=0):
         if customer:
             if 'customer' in customer[0]:
                 customer = customer[0]['customer']
-                subscription = create_subscription("re-active subscription", customer, plan, is_trial, subscription_type)
+                subscription = create_subscription(site, customer, plan, is_trial, subscription_type, renew_from_trial, transaction_id, tracking)
+                
+                is_active = 0 if int(renew_from_trial) else 1
                 if subscription:
                     doc = frappe.get_doc("Site", site)
                     for i in doc.site_subscription:
                         i.is_active = 0
                     doc.save(ignore_permissions=True)
+                    
+                    doc.is_renew = renew_from_trial
                     doc.append('site_subscription', {
                         'subscription': subscription,
                         'is_trial': is_trial,
-                        'is_active': 1
+                        'is_active': is_active,
+                        'is_renew': renew_from_trial
                     })
                     doc.save(ignore_permissions=True)
                     frappe.db.commit()
                     active = activate_site(site)
                     if active:
-                        frappe.msgprint(title= "Success", message= "Your Site Subscription is renewed", indicator= "green")
-                        
+                        frappe.msgprint(title= "Success", msg= "Your Site Subscription is renewed", indicator= "green")
+                        return True
             else:
-                return frappe.throw("Customer Not Found", "Customer not found for this site.")
+                frappe.throw("Customer Not Found", "Customer not found for this site.")
+                return False
         else:
-            return frappe.throw("Customer Not Found", "Customer not found for this site.")
+            frappe.throw("Customer Not Found", "Customer not found for this site.")
+            return False
 
-            
+             
     except Exception as e:
-        frappe.log_error("Error: While re new subscription for site.", f"Error: {e}\nsite: {site}\nsubceription_type: {subscription_type}\nplan: {plan}\nis_trial: {is_trial}")
-
-
+        frappe.log_error("Error: While re new subscription for site.", f"Error: {e}\nsite: {site}\nsubscription_type: {subscription_type}\nplan: {plan}\nis_trial: {is_trial}")
+        return False
+    
 @frappe.whitelist()
 def check_and_send_mail_for_expiring_subscription():
-    print()
     from datetime import datetime, timedelta
     import pdb
     pdb.set_trace()
@@ -220,7 +264,6 @@ def check_and_send_mail_for_expiring_subscription():
                                 <p>Thank you,</p>
                                 <p>Your Team</p>
                             """
-                            print("\n\nAre we sending mail???")
                             frappe.sendmail(
                                 recipients=[detail.get("site_owner_email")],
                                 subject=subject,
@@ -233,10 +276,6 @@ def check_and_send_mail_for_expiring_subscription():
                 f"Error while processing subscription: {subscription.get('name')}",
                 f"Exception: {str(e)}\nSubscription Data: {subscription}"
             )
-
-
-
-
 
 
                 # email_addresses = frappe.get_all("Portal User",filters={'parent':entry.get("party")},fields=["email"])
@@ -258,3 +297,72 @@ def check_and_send_mail_for_expiring_subscription():
                 #         subject=subject,
                 #         message=message
                 #     )
+                
+@frappe.whitelist()
+def cancel_subscription(subscription_name, site_name):
+    s_user = frappe.session.user
+    try:
+        frappe.set_user("Administrator")
+        doc = frappe.get_doc("Subscription", subscription_name)
+        doc.status = "Cancelled"
+        doc.cancelation_date = nowdate()
+        doc.custom_is_cancelled = 1
+        doc.save()
+        frappe.db.commit()
+        
+        if frappe.db.get_value("Site", site_name, ['is_renew']):
+            parent_doc = frappe.get_doc("Site", site_name)
+            data = [row for row in parent_doc.get("site_subscription") if row.is_renew == 1][0]
+            doc = frappe.get_doc("Subscription", data.subscription)
+            doc.status = "Cancelled"
+            doc.cancelation_date = nowdate()
+            doc.custom_is_cancelled = 1
+            doc.save()
+            frappe.db.commit()
+            
+        
+        d = frappe.db.get_value("Croem Saved Card Token", filters={"user": s_user, "site_name": site_name}, fieldname=['name'])
+        if d:
+            saved_data = frappe.get_doc("Croem Saved Card Token", d)
+            saved_data.delete()
+            frappe.db.commit()
+        frappe.set_user(s_user)
+
+    except Exception as e:
+        frappe.log_error("Error: While cancel subscription", f"Error: {e}\nsubscription_name: {subscription_name}")
+        frappe.set_user(s_user)
+
+def already_re_new(site_name):
+    try:
+        if frappe.db.get_value("Site", site_name, ['is_renew']):
+            # parent_doc = frappe.get_doc("Site", site_name)
+            # data = [row for row in parent_doc.get("site_subscription") if row.is_renew == 1][0]
+            # if frappe.db.get_value("Subscription", data.subscription, ['custom_is_cancelled']):
+            #     return False
+            # else:
+            doc = frappe.get_doc("Site", site_name)
+            for i in doc.site_subscription:
+                if i.is_renew:
+                    i.is_active = 1
+                    i.is_renew = 0
+            doc.is_new = 0
+            doc.save()
+            frappe.db.commit()
+            return True
+        else:
+            return False
+    except Exception as e:
+        frappe.log_error("Error: While check already renew or not", f"Error: {e}\nsite_name: {site_name}")
+        return False
+
+
+def remove_is_active_from_site(site_name):
+    try:
+        doc = frappe.get_doc("Site", site_name)
+        for i in doc.site_subscription:
+            i.is_active = 0
+        doc.save(ignore_permissions=True)
+        frappe.db.commit()
+        
+    except Exception as e:
+        frappe.log_error("Error: While remove is active", f"Error: {e}\n sitename: {site_name}")

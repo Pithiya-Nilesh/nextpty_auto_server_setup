@@ -1,16 +1,24 @@
 {% extends "templates/base.html" %}
-{% block title %}Re-new Site Subscription{% endblock %}
+{% block title %}Renew Site Subscription{% endblock %}
 {% block content %}
-<div class="container my-10">
+<div class="container">
     <div class="row justify-content-center">
-        <div class="col-md-6 border border-5 rounded-10 mt-10" style="min-width: fit-content;">
-            <h2 class="text-center">Re-new Site Subscription</h2>
-            <form method="POST" id="signupForm" class="form-horizontal p-10">
+        <div class="col-md-6 border border-5 rounded-10" style="min-width: fit-content;">
+            <h4 class="text-center">Renew Site Subscription</h4>
+            <form method="POST" id="signupForm" class="form-horizontal p-5">
+
+                <input type="text" class="form-control" id="renew_from_trial" name="renew_from_trial"
+                    style="border-top-right-radius: 0; border-bottom-right-radius: 0;" hidden>
+
                 <div class="form-group row">
                     <label for="site_name" class="col-12 col-form-label">Site Name</label>
                     <div class="col-md-12 d-flex">
-                        <input type="text" class="form-control" id="site_name" name="site_name" placeholder="Enter Site Name" style="border-top-right-radius: 0; border-bottom-right-radius: 0;">
-                        <div class="d-flex align-items-center bg-light px-3" style="border-top-left-radius: 0; border-bottom-left-radius: 0;">.nextpty.com</div>
+                        <input type="text" class="form-control" id="site_name" name="site_name"
+                            placeholder="Enter Site Name"
+                            style="border-top-right-radius: 0; border-bottom-right-radius: 0;" readonly>
+                        <div class="d-flex align-items-center bg-light px-3"
+                            style="border-top-left-radius: 0; border-bottom-left-radius: 0; margin-top: 0px;">
+                            .nextpty.com</div>
                     </div>
                     <div class="col-12">
                         <small id="site_name_error" class="form-text text-danger" style="display: none;"></small>
@@ -22,7 +30,7 @@
                     <div class="col-12">
                         <select class="form-control" id="plan" name="plan">
                             <option value="HOSTING STANDARD">Hosting Standard</option>
-                            <option value="Trial">Trial</option>
+                            <!-- <option value="Trial">Trial</option> -->
                         </select>
                         <small id="plan_error" class="form-text text-danger" style="display: none;"></small>
                     </div>
@@ -33,25 +41,97 @@
                     <div class="col-12">
                         <select class="form-control" id="subscription_type" name="subscription_type">
                             <option value="monthly">Monthly</option>
-                            <option value="yearly">Yearly</option>
+                            <!-- <option value="yearly">Yearly</option> -->
                         </select>
-                        <small id="subscription_type_error" class="form-text text-danger" style="display: none;"></small>
+                        <small id="subscription_type_error" class="form-text text-danger"
+                            style="display: none;"></small>
                     </div>
                 </div>
 
-                <div class="form-group row mt-10">
+
+                <!-- <div class="form-group row mt-10">
                     <div class="col-12">
                         <button type="submit" class="btn btn-primary w-100">Submit</button>
                     </div>
-                </div>
+                </div> -->
             </form>
+            <div id="creditcard-container"></div>
         </div>
     </div>
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        var navbar = document.querySelector('.navbar');
+    function validateForm() {
+        let isValid = true;
+
+        // Reset all error messages
+        document.querySelectorAll('.form-text.text-danger').forEach((el) => (el.style.display = 'none'));
+
+        // Validate required fields
+        const requiredFields = ['site_name', 'plan', 'subscription_type'];
+        requiredFields.forEach((field) => {
+            const input = document.getElementById(field);
+            if (!input.value.trim()) {
+                document.getElementById(`${field}_error`).textContent = `${field.replace('_', ' ')} is required.`;
+                document.getElementById(`${field}_error`).style.display = 'block';
+                isValid = false;
+            }
+        });
+
+        return isValid;
+    }
+
+    function SaveCreditCard_SuccessCallback(response) {
+        let cardToken = response.TokenDetails.AccountToken;
+        let accountNumber = response.TokenDetails.AccountNumber;
+        let cardholderName = response.TokenDetails.CardHolderName;
+        let associatedCard = response.TokenDetails.CardNumber;
+
+        if (validateForm()) {
+            const formData = {
+                renew_from_trial: document.getElementById('renew_from_trial').value,
+                site: document.getElementById('site_name').value.trim(),
+                subscription_type: document.getElementById('subscription_type').value,
+                plan: document.getElementById('plan').value
+            };
+
+            frappe.call({
+                method: "nextpty_auto_server_setup.www.payment.create_payment",
+                args: {
+                    plan: formData.plan,
+                    site: formData.site,
+                    subscription_type: formData.subscription_type || "monthly",
+                    is_trial: 0,
+                    popup_response: response.TokenDetails,
+                    renew_from_trial: formData.renew_from_trial
+                },
+                callback: function (res) {
+                    if (res.message['status'] === "Success") {
+                        window.location = "/dashboard"
+                        window.location.reload()
+                    }
+                },
+                freeze: true,
+                freeze_message: "Please wait we are processing your payment."
+            })
+        }
+    }
+
+    // Failed tokenization:
+    function SaveCreditCard_FailureCallback(response) {
+        console.log(response.ResponseCode);
+        console.log(response.ResponseDescription);
+    }
+
+    // Cancellation on the form:
+    function SaveCreditCard_CancelCallback() {
+        console.log("Cancel button pressed");
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        
+        if (window.self !== window.top) {
+            var navbar = document.querySelector('.navbar');
             if (navbar) {
                 navbar.style.display = 'none';
             }
@@ -60,61 +140,45 @@
             if (footer) {
                 footer.style.display = 'none';
             }
-
-            
-        const signupForm = document.getElementById('signupForm');
-
-        function validateForm() {
-            let isValid = true;
-
-            // Reset all error messages
-            document.querySelectorAll('.form-text.text-danger').forEach((el) => (el.style.display = 'none'));
-
-            // Validate required fields
-            const requiredFields = ['site_name', 'plan', 'subscription_type'];
-            requiredFields.forEach((field) => {
-                const input = document.getElementById(field);
-                if (!input.value.trim()) {
-                    document.getElementById(`${field}_error`).textContent = `${field.replace('_', ' ')} is required.`;
-                    document.getElementById(`${field}_error`).style.display = 'block';
-                    isValid = false;
-                }
-            });
-
-            return isValid;
         }
 
-        signupForm.addEventListener('submit', function(event) {
-            event.preventDefault();
+        // const signupForm = document.getElementById('signupForm');
 
-            if (validateForm()) {
-                const formData = {
-                    site: document.getElementById('site_name').value.trim(),
-                    subscription_type: document.getElementById('subscription_type').value,
-                    plan: document.getElementById('plan').value
-                };
-                console.log("form data", formData)
-                frappe.call({
-                    method: "nextpty_auto_server_setup.schedular.subscription.re_new_subscription",
-                    args: {
-                        site: formData.site,
-                        subscription_type: formData.subscription_type,
-                        plan: formData.plan
-                    },
-                    callback: function(response) {
-                        // alert('Signup successful!');
-                        console.log("response", response)
-                        // Reset the form
-                        signupForm.reset();
-                    },
-                    error: function(error) {
-                        alert('Error: ' + (error.message || 'Something went wrong!'));
-                    },
-                    freeze: true,
-                    freeze_message: "Processing your request..."
-                });
-            }
-        });
+        // signupForm.addEventListener('submit', function(event) {
+        //     event.preventDefault();
+        // function submitForm() {
+        //     if (validateForm()) {
+        //         const formData = {
+        //             site: document.getElementById('site_name').value.trim(),
+        //             subscription_type: document.getElementById('subscription_type').value,
+        //             plan: document.getElementById('plan').value
+        //         };
+        //         console.log("form data", formData)
+        //         frappe.call({
+        //             method: "nextpty_auto_server_setup.schedular.subscription.re_new_subscription",
+        //             args: {
+        //                 site: formData.site,
+        //                 subscription_type: formData.subscription_type,
+        //                 plan: formData.plan
+        //             },
+        //             callback: function (response) {
+        //                 // alert('Signup successful!');
+        //                 console.log("response", response)
+        //                 // Reset the form
+        //                 signupForm.reset();
+        //             },
+        //             error: function (error) {
+        //                 alert('Error: ' + (error.message || 'Something went wrong!'));
+        //             },
+        //             freeze: true,
+        //             freeze_message: "Processing your request..."
+        //         });
+        //     }
+        // }
+        // });
+        
+    
+
     });
 </script>
 {% endblock %}

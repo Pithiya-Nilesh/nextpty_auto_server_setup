@@ -21,6 +21,9 @@ app_license = "mit"
 # 	}
 # ]
 
+# on on_session_creation
+# on_session_creation="nextpty_auto_server_setup.apis.login.redirect_to_signup"
+
 # Includes in <head>
 # ------------------
 
@@ -60,9 +63,11 @@ app_license = "mit"
 # home_page = "login"
 
 # website user home page (by Role)
-# role_home_page = {
-# 	"Role": "home_page"
-# }
+role_home_page = {
+	"Customer": "dashboard",
+	"Guest": "signup",
+ 	"System Manager": "app"
+}
 
 # Generators
 # ----------

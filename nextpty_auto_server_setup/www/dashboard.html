@@ -6,45 +6,112 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 
 <style>
-    th{
+    th {
         background-color: #f3f3f3 !important;
     }
+
     #sitesTable {
-    width: 82%; /* Reduced width of the table */
-    margin: 0 auto; /* Center the table */
-    border-collapse: collapse;
-    margin-top: 40px;
-}
-.container{
-    min-width: -webkit-fill-available;
-}
-.subscription-label {
-    display: inline-block;
-    padding: 5px 10px;
-    border-radius: 15px;
-    font-size: 14px;
-    font-weight: bold;
-    text-align: center;
-    width: auto;
-}
+        width: 82%;
+        /* Reduced width of the table */
+        margin: 0 auto;
+        /* Center the table */
+        border-collapse: collapse;
+        margin-top: 40px;
+    }
 
-.label-active {
-    background-color: #d4f9e7; 
-    color: #1d9440; 
-    border: 1px solid #1d9440;
-}
+    #sitesTable thead th {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        background-color: #f8f9fa;
+    }
 
-.label-inactive {
-    background-color: #f3f3f3;
-    color: #9c9c9c; 
-    border: 1px solid #dcdcdc;
-}
-.list-group-item.active {
-    background-color: #2f7bcc; /* Light blue */
-    color: white;
-    border:None;
-}
 
+    .container {
+        min-width: -webkit-fill-available;
+        min-width: fill-available;
+        min-width: 100%;
+    }
+
+    .subscription-label {
+        display: inline-block;
+        padding: 5px 10px;
+        border-radius: 15px;
+        font-size: 14px;
+        font-weight: bold;
+        text-align: center;
+        width: auto;
+    }
+
+    .label-active {
+        background-color: #d4f9e7;
+        color: #1d9440;
+        /* border: 1px solid #1d9440; */
+    }
+
+    .label-inactive {
+        background-color: #f3f3f3;
+        color: #9c9c9c;
+        /* border: 1px solid #dcdcdc; */
+    }
+
+    .label-trialling {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+
+    .list-group-item.active {
+        background-color: #2f7bcc;
+        /* Light blue */
+        color: white;
+        border: None;
+    }
+
+    /* Site Status Label Color */
+    .label-pending {
+        background-color: #ffefd5;
+        color: #8b4513;
+    }
+
+    .label-installing {
+        background-color: #d1ecf1;
+        color: #0c5460;
+    }
+
+    .label-updating {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+
+    .label-online {
+        background-color: #d4f9e7;
+        color: #1d9440;
+    }
+
+    .label-inactive {
+        background-color: #fde4e4;
+        color: #d12626;
+    }
+
+    .label-broken {
+        background-color: #f8d7da;
+        color: #d12626;
+    }
+
+    .label-archived {
+        background-color: #e2e3e5;
+        color: #6c757d;
+    }
+
+    .label-suspended {
+        background-color: #f5c6cb;
+        color: #721c24;
+    }
+
+    .label-default {
+        background-color: #f8f9fa;
+        color: #6c757d;
+    }
 </style>
 {% endblock %}
 
@@ -55,24 +122,35 @@
         <!-- Sidebar (Adjustable width on small screens) -->
         <div class="col-md-3 col-lg-2 p-0 sidebar bg-light">
             <div class="list-group">
-                <a href="#allSites" class="list-group-item list-group-item-action" id="allSitesLink" style="border-radius: 0 !important;"><i class="fa fa-globe" style="margin-right: 10px;"></i>My All Sites</a>
-                <a href="#createNewSite" class="list-group-item list-group-item-action" id="createNewSiteLink" style="border-radius: 0 !important;"><i class="fa fa-plus-circle" style="margin-right: 10px;"></i>Create New Site</a>
-                <a href="#renewsitesubscription" class="list-group-item list-group-item-action" id="renewSiteSubscription" style="border-radius: 0 !important;"><i class="fa fa-sync-alt" style="margin-right: 10px;"></i>Renew Site Subscription</a>
+                <a href="#allSites" class="list-group-item list-group-item-action" id="allSitesLink"
+                    style="border-radius: 0 !important;"><i class="fa fa-globe" style="margin-right: 10px;"></i>My All
+                    Sites</a>
+                <a href="#createNewSite" class="list-group-item list-group-item-action" id="createNewSiteLink"
+                    style="border-radius: 0 !important;"><i class="fa fa-plus-circle"
+                        style="margin-right: 10px;"></i>Create New Site</a>
+                <!-- <a href="#renewsitesubscription" class="list-group-item list-group-item-action" id="renewSiteSubscription" style="border-radius: 0 !important;"><i class="fa fa-sync-alt" style="margin-right: 10px;"></i>Renew Site Subscription</a> -->
+
+                <a href="#paymenthistory" class="list-group-item list-group-item-action" id="paymentHistoryLink"
+                    style="border-radius: 0 !important;"><i class="fa fa-history"
+                        style="margin-right: 10px;"></i>Payment History</a>
             </div>
         </div>
 
         <!-- Main Content -->
         <div class="col-md-9 col-lg-10 content" style="height: 100vh;">
-                       
-            <div id="allSites" class="tab-content" style="height: 100vh;">
+
+            <div id="allSites" class="tab-content" style="height: 100vh;overflow-x: auto;">
                 <h4 style="width:82%;margin:3rem auto 0 auto;">All Sites</h4>
                 <table class="table table-bordered" id="sitesTable">
                     <thead>
                         <tr>
                             <th>Site Name</th>
-                            <th>Status</th>
-                            <th>Subscription</th>
-                            <th>Subscription Expiry Date</th>
+                            <!-- <th>Site Status</th> -->
+                            <th>Subscription Status</th>
+                            <!-- <th>Is Trial</th> -->
+                            <th>Expiry / Renewal Date</th>
+                            <th>Saved Card</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -87,8 +165,13 @@
                 </iframe>
             </div>
             <div id="renewsitesubscription" class="tab-content" style="display:none; height: 100vh;">
-                <iframe src="re-new-site-subscription.html" width="100%" height="100vh" frameborder="0" style="height: 100vh;">
-                    <!-- Your browser does not support iframes. -->
+                <iframe src="re-new-site-subscription.html" width="100%" height="100vh" frameborder="0"
+                    style="height: 100vh;" id="iframe_renew_subscription">
+                </iframe>
+            </div>
+            <div id="paymenthistory" class="tab-content" style="display: none;height: 100vh;">
+                <iframe src="paymenthistory.html" width="100%" height="100vh" frameborder="0" style="height: 100vh;">
+                    Your browser does not support iframes.
                 </iframe>
             </div>
         </div>
@@ -96,79 +179,256 @@
 </div>
 
 <script>
+
+    function fetchPaymentHistory() {
+        frappe.call({
+            method: "nextpty_auto_server_setup.apis.payment.get_user_payments",
+            callback: function (response) {
+                const data = response.message;
+
+                const iframe = document.querySelector("#paymenthistory iframe");
+
+                if (iframe && iframe.contentDocument) {
+                    const paymentTableBody = iframe.contentDocument.querySelector("#paymentTable tbody");
+                    if (paymentTableBody) {
+                        paymentTableBody.innerHTML = "";
+                        data.forEach(payment => {
+                            const row = `
+                            <tr>
+                                <td>${payment.name}</td>
+                                <td>${payment.posting_date}</td>
+                                <td>${payment.paid_amount}</td>
+                                <td>
+                                    <button class="btn btn-primary btn-sm" onclick="downloadInvoice('${payment.name}')">Download Invoice</button>
+                                </td>
+                            </tr>
+                        `;
+                            paymentTableBody.innerHTML += row;
+                        });
+                    }
+                }
+            },
+            error: function (error) {
+                console.error("Error fetching payment history:", error);
+            }
+        });
+    }
+
+    // function downloadInvoice(paymentName) {
+    //     window.open(`/api/method/frappe.utils.print_format.download_pdf?doctype=Payment%20Entry&name=${paymentName}&format=Standard&no_letterhead=1&letterhead=No%20Letterhead&settings=%7B%7D`);
+    // }
     function fetchSiteData() {
-            frappe.call({
-                method: "nextpty_auto_server_setup.apis.site.get_site_data",
-                callback: function(response) {
+        frappe.call({
+            method: "nextpty_auto_server_setup.apis.site.get_site_data",
+            callback: function (response) {
+                if (response.message.redirect) {
+                    window.location.href = response.message.redirect;
+                }
+                else {
                     const data = response.message;
-                    console.log(data);
                     const sitesTableBody = document.querySelector("#sitesTable tbody");
                     sitesTableBody.innerHTML = "";
                     data.forEach(site => {
-                        const subscriptionClass = site.subscription === "Active" ? "label-active" : "label-inactive";
+                        // const subscriptionClass = site.subscription === "Active" ? "label-active" : "label-inactive";
+                        const subscriptionClasses = {
+                            "Active": "label-active",
+                            "Trialling": "label-trialling",
+                        };
+
+                        const subscriptionClass = subscriptionClasses[site.subscription] || "label-inactive";
+
+                        const actionButton = site.subscription === "Active"
+                            ? `<button class="btn btn-danger btn-sm" onclick="cancelSubscription('${site.subscription_name}', '${site.site_name}')">Cancel Subscription</button>`
+                            : site.subscription === "Cancelled"
+                                ? `<button class="btn btn-success btn-sm" onclick="renewSubscription('${site.site_name}', '${0}')">Reactivate Subscription</button>`
+                                : site.subscription === "Expired"
+                                    ? `<button class="btn btn-success btn-sm" onclick="renewSubscription('${site.site_name}', '${0}')">Renew Subscription</button>`
+                                    : site.subscription === "Trialling"
+                                        ? `<button class="btn btn-success btn-sm" onclick="renewSubscription('${site.site_name}', '${site.is_trial}')">Activate Subscription</button>`
+                                        : `<button class="btn btn-success btn-sm" onclick="renewSubscription('${site.site_name}', '${0}')">Renew Subscription</button>`
+
+                        const is_trial = site.is_trial ? "Yes" : "No"
+
+                        const statusClasses = {
+                            "Creation Pending": "label-pending",
+                            "Pending": "label-pending",
+                            "Installing": "label-installing",
+                            "Updating": "label-updating",
+                            "Active": "label-online",
+                            "Inactive": "label-inactive",
+                            "Broken": "label-broken",
+                            "Archived": "label-archived",
+                            "Suspended": "label-suspended"
+                        };
+
+                        const siteStatusClass = statusClasses[site.status] || "label-default";
 
                         const row = `
-                            <tr>
-                                <td>${site.site_name}</td>
-                                <td>${site.status}</td>
-                                <td><span class="subscription-label ${subscriptionClass}">${site.subscription}</span></td>
-                                <td>${site.expiry_date}</td>
-                            </tr>
-                        `;
+                                <tr>
+                                    <td>${site.site_name}.nextpty.com</td>
+                                    
+                                    <td><span class="subscription-label ${subscriptionClass}">${site.subscription}</span></td>
+                    
+                                    <td>${site.expiry_date}</td>
+                                    <td>${site.save_card || ""}</td>
+                                    <td>${actionButton}</td>
+                                </tr>
+                            `;
                         sitesTableBody.innerHTML += row;
                     });
-                },
-                error: function(error) {
-                    console.error("Error fetching site data:", error);
                 }
-            });
-        }
-
-
-    document.addEventListener("DOMContentLoaded", function() {
-        
-    const allSitesLink = document.getElementById("allSitesLink");
-    const createNewSiteLink = document.getElementById("createNewSiteLink");
-    const renewSiteSubscriptionLink = document.getElementById("renewSiteSubscription");
-
-    function setActiveTab(activeTab) {
-        allSitesLink.classList.remove("active");
-        createNewSiteLink.classList.remove("active");
-        renewSiteSubscriptionLink.classList.remove("active");
-
-        activeTab.classList.add("active");
+            },
+            error: function (error) {
+                console.error("Error fetching site data:", error);
+            }
+        });
     }
 
-    fetchSiteData();
-    setActiveTab(allSitesLink);
+    function cancelSubscription(subscription_name, site_name) {
 
-    allSitesLink.addEventListener("click", function() {
-        event.preventDefault();
-        setActiveTab(allSitesLink);
+        frappe.confirm(
+            'As you are cancelling the plan, your saved card details will be deleted, please confirm',
+            () => {
+                frappe.call({
+                    method: "nextpty_auto_server_setup.schedular.subscription.cancel_subscription",
+                    args: {
+                        subscription_name: subscription_name,
+                        site_name: site_name
+                    },
+                    callback: function (res) {
+                        window.location.reload()
+                    },
+                    freeze: true,
+                    freeze_message: "Please wait we are cancelling you subscription"
+                })
+            },
+            () => {
+                // Action to take if the user cancels
+                console.log('User canceled');
+            }
+        );
+    }
 
-        document.getElementById("allSites").style.display = "block";
-        document.getElementById("createNewSite").style.display = "none";
-        document.getElementById("renewsitesubscription").style.display = "none";
-        fetchSiteData();
-    });
-
-    createNewSiteLink.addEventListener("click", function() {
-        event.preventDefault();
-        setActiveTab(createNewSiteLink);
-
-        document.getElementById("createNewSite").style.display = "block";
-        document.getElementById("allSites").style.display = "none";
-        document.getElementById("renewsitesubscription").style.display = "none";
-
-    });
-    renewSiteSubscriptionLink.addEventListener("click", function() {
-        event.preventDefault();
-        setActiveTab(renewSiteSubscriptionLink);
+    function renewSubscription(siteName, renew_from_trial) {
+        // window.localStorage.setItem("re_new_sitename", siteName)
 
         document.getElementById("renewsitesubscription").style.display = "block";
         document.getElementById("createNewSite").style.display = "none";
         document.getElementById("allSites").style.display = "none";
-    });    
-    });
+
+        const iframe = document.getElementById("iframe_renew_subscription");
+        // iframe.src = iframe.src;
+        const iframeDoc = iframe.contentWindow.document;
+        const site_name_field = iframeDoc.getElementById("site_name");
+        if (site_name_field) {
+            site_name_field.value = siteName;
+        }
+
+        const renew_from_trial_field = iframeDoc.getElementById("renew_from_trial");
+        if (renew_from_trial_field) {
+            renew_from_trial_field.value = renew_from_trial;
+        }
+
+        frappe.call({
+            method: "nextpty_auto_server_setup.www.payment.get_payment_popup",
+            args: {
+                site_name: siteName,
+            },
+            callback: function (response) {
+                const container = iframeDoc.getElementById("creditcard-container");
+                if (response.message && response.message.html) {
+                    container.innerHTML = response.message.html;
+
+                    const scripts = container.querySelectorAll("script");
+                    scripts.forEach(script => {
+                        const newScript = iframeDoc.createElement("script");
+                        if (script.src) {
+                            newScript.src = script.src;
+                            newScript.async = true;
+                        } else {
+                            newScript.textContent = script.textContent;
+                        }
+                        iframeDoc.body.appendChild(newScript);
+                    });
+                } else {
+                    container.innerHTML = `
+                <div style="color: red;">
+                    Failed to load the payment form. Please try again later.
+                </div>
+            `;
+                }
+            },
+            error: function (error) {
+                console.error("Error fetching data:", error);
+                iframeDoc.getElementById("creditcard-container").innerHTML = `
+            <div style="color: red;">
+                An error occurred while loading the payment form. Please try again later.
+            </div>
+        `;
+            }
+        });
+    }
+
+
+    document.addEventListener("DOMContentLoaded", function () {
+
+        const allSitesLink = document.getElementById("allSitesLink");
+        const createNewSiteLink = document.getElementById("createNewSiteLink");
+        const paymentHistoryLink = document.getElementById("paymentHistoryLink");
+        // const renewSiteSubscriptionLink = document.getElementById("renewSiteSubscription");
+
+        function setActiveTab(activeTab) {
+            allSitesLink.classList.remove("active");
+            createNewSiteLink.classList.remove("active");
+            paymentHistoryLink.classList.remove("active");
+            // renewSiteSubscriptionLink.classList.remove("active");
+
+            activeTab.classList.add("active");
+        }
+
+        fetchSiteData();
+        setActiveTab(allSitesLink);
+
+        allSitesLink.addEventListener("click", function () {
+            event.preventDefault();
+            setActiveTab(allSitesLink);
+
+            document.getElementById("allSites").style.display = "block";
+            document.getElementById("createNewSite").style.display = "none";
+            document.getElementById("paymenthistory").style.display = "none";
+            document.getElementById("renewsitesubscription").style.display = "none";
+            fetchSiteData();
+        });
+
+        createNewSiteLink.addEventListener("click", function () {
+            event.preventDefault();
+            setActiveTab(createNewSiteLink);
+
+            document.getElementById("createNewSite").style.display = "block";
+            document.getElementById("allSites").style.display = "none";
+            document.getElementById("paymenthistory").style.display = "none";
+            document.getElementById("renewsitesubscription").style.display = "none";
+
+        });
+        paymentHistoryLink.addEventListener("click", function () {
+            event.preventDefault();
+            setActiveTab(paymentHistoryLink);
+
+            document.getElementById("paymenthistory").style.display = "block";
+            document.getElementById("createNewSite").style.display = "none";
+            document.getElementById("allSites").style.display = "none";
+            document.getElementById("renewsitesubscription").style.display = "none";
+            fetchPaymentHistory();
+        })
+        // renewSiteSubscriptionLink.addEventListener("click", function() {
+        //     event.preventDefault();
+        //     setActiveTab(renewSiteSubscriptionLink);
+
+        //     document.getElementById("renewsitesubscription").style.display = "block";
+        //     document.getElementById("createNewSite").style.display = "none";
+        //     document.getElementById("allSites").style.display = "none";
+        // });
+
+    })
 </script>
 {% endblock %}

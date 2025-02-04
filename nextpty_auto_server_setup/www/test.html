@@ -1,43 +1,93 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "templates/base.html" %}
+{% block title %} Sign Up {% endblock %}
+{% block head_include %}
+{% endblock %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>payment test</title>
-</head>
 
-<body>
-    <div align="center">
-        <h1>Payment Form</h1>
-        <div id="creditcard-container">dfd</div>
-    </div>
+{% block content %}
+<div align="center">
+    <h1>Payment Form</h1>
+    <div id="creditcard-container"></div>
+</div>
 
-</body>
 <script>
-    const params = new URLSearchParams({
-        APIKey: "FOadLuTCRArH",
-        Token: "",
-        Culture: ""
-    }).toString();
+    function SaveCreditCard_SuccessCallback(response) {
+        let cardToken = response.TokenDetails.AccountToken;
+        let accountNumber = response.TokenDetails.AccountNumber;
+        let cardholderName = response.TokenDetails.CardHolderName;
+        let associatedCard = response.TokenDetails.CardNumber;
 
-    fetch(`https://bacapicomponentv2-test.merchantprocess.net/UIComponent/CreditCard?APIKey=FOadLuTCRArH&Token=&Culture=`, {
-        method: "GET"
-    })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
+        console.log("cardToken", cardToken)
+        console.log("accountNumber", accountNumber)
+        console.log("cardholderName", cardholderName)
+        console.log("associatedCard", associatedCard)
+
+        frappe.call({
+            method: "nextpty_auto_server_setup.www.payment.create_payment",
+            args: {
+                plan: "Trial",
+                site: "",
+                subscription_type: "monthly",
+                is_trial: 0,
+                popup_response: response.TokenDetails
+            },
+            callback: function(res){
+                console.log("payment res", res)
             }
-            return response.text();
         })
-        .then(jsonResponse => {
-            console.log("asdf", jsonResponse)
-            document.getElementById("creditcard-container").innerHTML = jsonResponse;
-        })
-        .catch(error => {
-            console.error("Error fetching data:", error);
+    }
+
+    // Failed tokenization:
+    function SaveCreditCard_FailureCallback(response) {
+        console.log(response.ResponseCode);
+        console.log(response.ResponseDescription);
+    }
+
+    // Cancellation on the form:
+    function SaveCreditCard_CancelCallback() {
+        console.log("Cancel button pressed");
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+
+        frappe.call({
+            method: "nextpty_auto_server_setup.www.payment.get_payment_popup",
+            callback: function (response) {
+                const container = document.getElementById("creditcard-container");
+                if (response.message && response.message.html) {
+                    container.innerHTML = response.message.html;
+
+                    const scripts = container.querySelectorAll("script");
+                    scripts.forEach(script => {
+                        const newScript = document.createElement("script");
+                        if (script.src) {
+                            newScript.src = script.src;
+                            newScript.async = true;
+                        } else {
+                            newScript.textContent = script.textContent;
+                        }
+                        document.body.appendChild(newScript);
+                    });
+                } else {
+                    container.innerHTML = `
+                <div style="color: red;">
+                    Failed to load the payment form. Please try again later.
+                </div>
+            `;
+                }
+            },
+            error: function (error) {
+                console.error("Error fetching data:", error);
+                document.getElementById("creditcard-container").innerHTML = `
+            <div style="color: red;">
+                An error occurred while loading the payment form. Please try again later.
+            </div>
+        `;
+            }
         });
+    })
 
 </script>
 
 </html>
+{% endblock %}

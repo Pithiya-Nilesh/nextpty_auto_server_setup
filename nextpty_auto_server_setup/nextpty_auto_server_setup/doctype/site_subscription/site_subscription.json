@@ -8,7 +8,8 @@
  "field_order": [
   "subscription",
   "is_trial",
-  "is_active"
+  "is_active",
+  "is_renew"
  ],
  "fields": [
   {
@@ -34,12 +35,20 @@
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "is Active"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_renew",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "is Renew"
   }
  ],
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2024-11-14 13:07:09.229568",
+ "modified": "2025-01-24 13:49:30.811148",
  "modified_by": "Administrator",
  "module": "Nextpty Auto Server Setup",
  "name": "Site Subscription",

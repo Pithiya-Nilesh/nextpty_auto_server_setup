@@ -1,7 +1,9 @@
 from datetime import datetime, timedelta
 import re
 import frappe, json
+from frappe.auth import LoginManager
 import requests
+from frappe.utils import today
 
 
 
@@ -29,7 +31,13 @@ def signup(formdata):
             if subscription:
                 if create_site_record(data['site_name'], subscription):
                     if create_customer_site_details_record(data, customer):
+                        login_manager = LoginManager()
+                        login_manager.login_as(user)
+                        frappe.db.commit()
                         frappe.msgprint(title=frappe._('Your site creation is in progress...'), msg=frappe._(f"Soon, we will share the credentials and the URL of your site with you via email at {data['contact_email']}."))
+                        frappe.local.response["type"] = "redirect"
+                        frappe.local.response["location"] = "/dashboard"
+                        return
 
 @frappe.whitelist()
 def site_exist(site_name):
@@ -94,7 +102,7 @@ def create_customer(data, user):
         frappe.throw(msg=e, title=frappe._("Somthing Want wrong"))
 
 
-def create_subscription(data, customer, plan="Trial", is_trial=1, subscription_type="monthly"):
+def create_subscription(data, customer, plan="Trial", is_trial=1, subscription_type="monthly", renew_from_trial=0, transaction_id="", tracking=""):
     try:
         doc = frappe.new_doc("Subscription")
         doc.party_type = "Customer"
@@ -103,6 +111,20 @@ def create_subscription(data, customer, plan="Trial", is_trial=1, subscription_t
             doc.trial_period_start = datetime.today().strftime('%Y-%m-%d')
             trial_period_end_date = datetime.today() + timedelta(days=60)
             doc.trial_period_end = trial_period_end_date.strftime('%Y-%m-%d')
+        
+        elif renew_from_trial:
+            site_data = frappe.get_all("Site Subscription",filters={"parent":data, "parenttype":"Site"},fields=["subscription","is_active","is_trial","creation"])
+            if site_data:
+                last_subscription_data = sorted(site_data, key=lambda x: x["creation"], reverse=False)[0]
+                trial_end_date = frappe.db.get_value("Subscription", last_subscription_data["subscription"], ["trial_period_end"])
+                                
+                if trial_end_date:
+                    start_date = trial_end_date
+                else:
+                    start_date = datetime.today()
+                    
+                doc.start_date = start_date
+                doc.end_date = start_date + timedelta(days=31)
         else:
             doc.start_date = datetime.today().strftime('%Y-%m-%d')
             if subscription_type == "monthly":
@@ -117,6 +139,52 @@ def create_subscription(data, customer, plan="Trial", is_trial=1, subscription_t
         })
         doc.insert(ignore_permissions=True)
         frappe.db.commit()
+        if not is_trial:
+            s_user = frappe.session.user
+            frappe.set_user('Administrator')
+            si = frappe.new_doc("Sales Invoice")
+            si.customer = customer
+            si.subscription = doc.name
+            si.status = "Paid"
+            si.due_date = today()
+            si.currency = "USD"
+            si.selling_price_list = "Standard Selling"
+            amount = frappe.db.get_value("Subscription Plan", plan, ['cost'])
+            item = frappe.db.get_value("Subscription Plan", plan, ['item'])
+            si.append('items', {
+                "item_code": item,
+                "qty": 1,
+                "rate": amount
+            })
+            si.insert(ignore_permissions=True)
+            si.submit()
+            frappe.db.commit()
+            
+            pe = frappe.new_doc("Payment Entry")
+            pe.payment_type = "Receive"
+            pe.party_type = "Customer"
+            pe.party = customer
+            abbr = "N"
+            pe.paid_to = f"1201 - Banco General - 0301251505 - {abbr}"
+            # pe.paid_to = "Bank Account - SD"
+            pe.target_exchange_rate = 1
+            pe.paid_amount= amount
+            pe.received_amount = amount
+            pe.append("references", {
+                "reference_doctype": "Sales Invoice",
+                "reference_name": si.name,
+                "total_amount": amount,
+                "allocated_amount": amount
+            })
+            pe.reference_no = transaction_id
+            pe.custom_remarks = 1
+            pe.remarks = f"{doc.name}-{customer}-{tracking}"
+            pe.reference_date = today()
+            pe.insert(ignore_permissions=True)
+            pe.submit()
+            frappe.db.commit()
+            frappe.set_user(s_user)
+            
         return doc.name
     
     except Exception as e:

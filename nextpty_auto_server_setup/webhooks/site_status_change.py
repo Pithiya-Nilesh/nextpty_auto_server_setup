@@ -43,7 +43,7 @@ def configure_site_for_active_status(site, parent):
                 
                 status_exist = frappe.db.get_value("Site Auto Setup Status", filters={"name": site}, fieldname=['name'])
                 if status_exist:
-                    s_status = frappe.db.ge_value("Site Auto Setup Status", filters={"name": site}, fieldname=['status'])
+                    s_status = frappe.db.get_value("Site Auto Setup Status", filters={"name": site}, fieldname=['status'])
                     if s_status in ["In Progress", "Completed"]:
                         return
                 
