@@ -169,3 +169,19 @@ def save_card_details(user, popup_response, site_name):
         
     except Exception as e:
         frappe.log_error("Error: While save card details", f"Error: {e}\nuser: {user}\npopup_response: {popup_response}")
+
+@frappe.whitelist()
+def change_card_details(popup_response, save_card_id):
+    try:
+        popup_response = json.loads(popup_response)
+        doc = frappe.get_doc("Croem Saved Card Token", save_card_id)
+        doc.token = popup_response.get("AccountToken")
+        doc.account_number = popup_response.get("AccountNumber")
+        doc.card_holder_name = popup_response.get("CardHolderName")
+        doc.card_number = popup_response.get("CardNumber")
+        doc.save(ignore_permissions=True)
+        frappe.db.commit()
+        return {"status": True}
+    except Exception as e:
+        frappe.log_error("Error: While change card details", f"Error: {e}\npopup_response: {popup_response}\nsave_card_id: {save_card_id}")
+        return {"status": False}

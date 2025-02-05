@@ -137,8 +137,8 @@ def check_auto_renew(site_name):
             if cancelled or not saved_card:
                 return False
             else:
-                already_re_new = already_re_new(site_name)
-                if already_re_new:
+                already_renew = already_re_new(site_name)
+                if already_renew:
                     return True
                 else:
                     token = get_decrypted_password("Croem Saved Card Token", saved_card, "token") or ""
@@ -148,6 +148,7 @@ def check_auto_renew(site_name):
             return False
     except Exception as e:
         frappe.log_error("Error: While check for auto renew", f"Error: {e}\nsitename: {site_name}")
+
 
 @frappe.whitelist()
 def re_new_subscription(site, subscription_type, plan, is_trial=0, renew_from_trial=0, transaction_id="", tracking=""):
@@ -240,7 +241,7 @@ def check_and_send_mail_for_expiring_subscription():
             if isinstance(end_date, str):
                 end_date = datetime.strptime(end_date, "%Y-%m-%d").date()
 
-            if today_date <= end_date <= (today_date + timedelta(days=3)):
+            if today_date <= end_date <= (today_date + timedelta(days=10)):
                 site_details = frappe.get_all(
                     "Site Subscription",  
                     filters={"subscription": subscription.get("name")},
@@ -366,3 +367,71 @@ def remove_is_active_from_site(site_name):
         
     except Exception as e:
         frappe.log_error("Error: While remove is active", f"Error: {e}\n sitename: {site_name}")
+        
+
+@frappe.whitelist()
+def check_and_send_mail_for_expiring_trial_subscription():
+    from datetime import datetime, timedelta
+    import pdb
+    pdb.set_trace()
+
+    subscriptions = frappe.get_all("Subscription", fields=["name","status", "party", "end_date","trial_period_end"])
+    today_date = datetime.today().date()
+
+    for subscription in subscriptions:
+        try:
+            if subscription.get("status") == "Trialling":
+                end_date = subscription.get("trial_period_end")
+
+                if not end_date:
+                    frappe.log_error(
+                        f"Subscription {subscription.get('name')} has no valid end date.",
+                        "Missing end date in Subscription"
+                    )
+                    continue
+
+                if isinstance(end_date, str):
+                    end_date = datetime.strptime(end_date, "%Y-%m-%d").date()
+
+                if today_date <= end_date <= (today_date + timedelta(days=10)):
+                    site_details = frappe.get_all(
+                        "Site Subscription",  
+                        filters={"subscription": subscription.get("name")},
+                        fields=["parent"]
+                    )
+
+                    for site in site_details:
+                        site_data = frappe.get_all(
+                            "Site Details", 
+                            filters={"site_name": site.get("parent")},
+                            fields=["parent", "site_owner_email","site_name"]
+                        )
+
+                        for detail in site_data:
+                            
+                            if already_re_new(detail.get('site_name')):
+                                continue
+                            
+                            else:
+                                dashboard_site = f"{frappe.utils.get_url()}/login"
+                                subject = f"¡Quedan 10 días! Tu prueba de {subscription.get('name')} vence pronto. ¡Renueva hoy!"
+                                message = f"""
+                                    <p>Gracias por elegir NextPTY y darnos la oportunidad de demostrarte porqué ERP Next localizado por nosotros es la mejor opción para tu negocio. Tu periodo de prueba está por vencer en los siguientes 10 (diez) días. </p><br>
+                                    <p>Si deseas seguir utilizando ERP Nexto, solamente debes entrar {dashboard_site} con tu usuario y contraseña para completar tu suscripción y seguir utilizando erpnext.</p><br>
+                                    <p>Cualquier duda que tengas, puedes contactarnos a soporte@nextpty.com</p><br>
+                                    <p>Atentamente</p>
+                                    <p>NextPTY</p>
+                                """
+                                frappe.sendmail(
+                                    recipients=[detail.get("site_owner_email")],
+                                    sender="soporte@nextpty.com",
+                                    subject=subject,
+                                    message=message
+                                )
+
+        except Exception as e:
+            # Log errors with detailed context
+            frappe.log_error(
+                f"Error while processing subscription: {subscription.get('name')}",
+                f"Exception: {str(e)}\nSubscription Data: {subscription}"
+            )

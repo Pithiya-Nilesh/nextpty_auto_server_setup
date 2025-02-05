@@ -164,7 +164,7 @@ scheduler_events = {
 	# ],
 	"daily": [
 		"nextpty_auto_server_setup.schedular.subscription.check_and_deactivate_expired_subscription_sites",
-        "nextpty_auto_server_setup.schedular.subscription.check_and_send_mail_for_expiring_subscription"
+        "nextpty_auto_server_setup.schedular.subscription.check_and_send_mail_for_expiring_trial_subscription"
 	],
 	# "hourly": [
 	# 	"nextpty_auto_server_setup.tasks.hourly"
