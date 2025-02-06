@@ -64,9 +64,9 @@ app_license = "mit"
 
 # website user home page (by Role)
 role_home_page = {
-	"Customer": "dashboard",
-	"Guest": "signup",
- 	"System Manager": "app"
+	"Customer": "/dashboard",
+	"Guest": "/landing",
+ 	"System Manager": "/app"
 }
 
 # Generators
