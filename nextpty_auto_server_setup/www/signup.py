@@ -60,7 +60,7 @@ def create_user(data):
                 "email": data['contact_email'],
                 "first_name": data['company_name'],
                 "send_welcome_email": 0,
-                "enabled": 1,        
+                "enabled": 1,
                 "roles": [
                     { "role": "Customer"}
                 ]

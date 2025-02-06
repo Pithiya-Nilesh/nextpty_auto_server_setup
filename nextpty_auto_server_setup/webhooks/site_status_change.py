@@ -1,6 +1,7 @@
 import json
 import frappe
 from frappe.utils import get_abbr
+import frappe.utils
 from nextpty_auto_server_setup.apis.site_domain import create_dns_record_and_add_domain
 import requests
 
@@ -104,6 +105,8 @@ def send_site_active_email(site, parent, res):
         
         msg = res['message']
         
+        dashboard_site = f"{frappe.utils.get_url()}/login"
+        
         # email_subject = "Welcome! Your Website is Live - Access Details Inside"
         email_subject = f"Tu sitio de trabajo {site_name} ha sido creado"
         
@@ -115,6 +118,7 @@ def send_site_active_email(site, parent, res):
             <p>Password: {msg['password']}  </p><br>
 
             <p>Gracias por elegir NextPTY y darnos la oportunidad de demostrarte porqué ERP Next localizado por nosotros es la mejor opción para tu negocio.</p><br>
+            <p>Para verificar su estatus de suscripción y activar formas de pagos, puede acceder a: {dashboard_site}</p><br>
             <p>Cualquier duda que tengas, puedes contactarnos a soporte@nextpty.com</p><br>
             <p>Atentamente,</p>
             <p>NextPTY</p>

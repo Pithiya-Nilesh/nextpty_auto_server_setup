@@ -1,0 +1,67 @@
+{% extends "templates/base.html" %}
+{% block title %}Change Card Details{% endblock %}
+{% block content %}
+<div class="container my-10">
+    <div class="row justify-content-center">
+        <div class="col-md-6 border border-5 rounded-10" style="min-width: fit-content;">
+            <h4 class="text-center">Change Card Details</h4>
+            <input type="text" id="save_card_id" hidden/>
+            <div id="creditcard-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+
+    function SaveCreditCard_SuccessCallback(response) {
+        let cardToken = response.TokenDetails.AccountToken;
+        let accountNumber = response.TokenDetails.AccountNumber;
+        let cardholderName = response.TokenDetails.CardHolderName;
+        let associatedCard = response.TokenDetails.CardNumber;
+
+        save_card_id = document.getElementById('save_card_id').value
+        frappe.call({
+            method: "nextpty_auto_server_setup.www.payment.change_card_details",
+            args: {
+                popup_response: response.TokenDetails,
+                save_card_id: save_card_id,
+            },
+            callback: function (res) {
+                if (res.message['status']) {
+                    window.location = "/dashboard"
+                    window.location.reload()
+                }
+            },
+            freeze: true,
+            freeze_message: "Please wait we are processing your request."
+        })
+    }
+
+    // Failed tokenization:
+    function SaveCreditCard_FailureCallback(response) {
+        console.log(response.ResponseCode);
+        console.log(response.ResponseDescription);
+    }
+
+    // Cancellation on the form:
+    function SaveCreditCard_CancelCallback() {
+        console.log("Cancel button pressed");
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+
+        if (window.self !== window.top) {
+            var navbar = document.querySelector('.navbar');
+            if (navbar) {
+                navbar.style.display = 'none';
+            }
+
+            var footer = document.querySelector('.web-footer');
+            if (footer) {
+                footer.style.display = 'none';
+            }
+        }
+
+
+    });
+</script>
+{% endblock %}
