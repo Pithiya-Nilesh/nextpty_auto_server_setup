@@ -211,7 +211,7 @@ def get_site_data():
     try:
         session_user = frappe.session.user
         if session_user=="Guest":
-            return {"redirect": "/signup"}
+            return {"redirect": "/login"}
 
         customers = frappe.get_all("Portal User",filters={"user":session_user,"parenttype":"Customer"},fields=["parent"])
 
