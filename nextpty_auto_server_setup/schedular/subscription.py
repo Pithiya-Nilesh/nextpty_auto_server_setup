@@ -201,6 +201,7 @@ def re_new_subscription(site, subscription_type, plan, is_trial=0, renew_from_tr
                     frappe.db.commit()
                     active = activate_site(site)
                     if active:
+                        send_renewal_mail(site, subscription_type, plan, is_trial=0, renew_from_trial=0, transaction_id="", tracking="", subscription=subscription, customer=customer)
                         frappe.msgprint(title= "Success", msg= "Your Site Subscription is renewed", indicator= "green")
                         return True
             else:
@@ -356,7 +357,6 @@ def already_re_new(site_name):
         frappe.log_error("Error: While check already renew or not", f"Error: {e}\nsite_name: {site_name}")
         return False
 
-
 def remove_is_active_from_site(site_name):
     try:
         doc = frappe.get_doc("Site", site_name)
@@ -367,7 +367,6 @@ def remove_is_active_from_site(site_name):
         
     except Exception as e:
         frappe.log_error("Error: While remove is active", f"Error: {e}\n sitename: {site_name}")
-        
 
 @frappe.whitelist()
 def check_and_send_mail_for_expiring_trial_subscription():
@@ -435,3 +434,55 @@ def check_and_send_mail_for_expiring_trial_subscription():
                 f"Error while processing subscription: {subscription.get('name')}",
                 f"Exception: {str(e)}\nSubscription Data: {subscription}"
             )
+
+
+def send_renewal_mail(site, subscription_type, plan, is_trial=0, renew_from_trial=0, transaction_id="", tracking="", subscription="", customer=""):
+    try:
+        from frappe.utils import today
+        from datetime import datetime
+
+        date_str = today()
+        today_data = datetime.strptime(date_str, "%Y-%m-%d").strftime("%d-%m-%Y")
+        
+        dashboard_site = f"{frappe.utils.get_url()}/dashboard"
+        email_subject = "¡Bienvenido a NextPTY! Tu suscripción ha sido confirmada"
+        plan_amount = frappe.db.get_value("Subscription Plan", plan, ['cost'] or 0)
+        site_customer = frappe.db.get_value("Customer", customer, ['customer_name'])
+        emails = frappe.get_all("Portal User", filters={"parent": customer}, fields=['user'], pluck='user')
+        next_renewal_date = frappe.db.get_value("Subscription", subscription, fieldname=['end_date']).strftime('%d-%m-%Y')
+        card_details = frappe.db.get_value("Croem Saved Card Token", filters={"user": emails[0], "site_name": site}, fieldname=['card_number'])
+        
+        email_template = f"""
+            <p>Hola {site_customer},</p><br>
+
+            <p>¡Gracias por suscribirte a NextPTY! Nos complace darte la bienvenida a nuestra plataforma. Tu pago ha sido procesado con éxito y ahora tienes acceso a todos nuestros servicios.</p><br>
+            
+            <p>Detalles de tu suscripción:</p>
+
+            <p>Plan seleccionado: { plan }</p>
+            <p>Monto cobrado: { plan_amount }</p>
+            <p>Fecha de cobro: {today_data}</p>
+            <p>Próxima fecha de renovación: {next_renewal_date}</p>
+            <p>Método de pago: {card_details}</p><br>
+
+            <p>Puedes administrar tu suscripción y métodos de pago en cualquier momento desde tu cuenta:</p>
+
+            <p>{dashboard_site}</p>
+
+            <p>Si necesitas ayuda, nuestro equipo de soporte está disponible en soporte@nextpty.com</p>
+
+            <p>¡Sube de Nivel Hoy con NextPTY!</p>
+
+            <p>¡Esperamos que disfrutes tu experiencia con NextPTY!</p><br>
+
+            <p>Saludos,</p>
+            <p>El equipo de NextPTY</p>
+            <p>nextpty.com</p> """
+            
+            #  <p>Si necesitas ayuda, nuestro equipo de soporte está disponible en soporte@nextpty.com o a través de nuestro centro de ayuda: [Enlace al soporte].</p><br>
+
+        frappe.sendmail(recipients=emails, sender="soporte@nextpty.com", subject=email_subject, message=email_template, now=True)
+        
+    except Exception as e:
+        frappe.log_error("Error: While sending renewal mail", f"Error: {e}\nsite: {site}\nsubscription_type: {subscription_type}\nplan: {plan}\nis_trial: {is_trial}")
+

@@ -277,7 +277,8 @@ def get_site_data():
                     "save_card": get_save_card(session_user, site_name, 'card_number'),
                     "save_card_id": get_save_card(session_user, site_name, 'name'),
                     "expiry_date": get_subscription_end_date(subscription_end_date, site_name) if subscription_end_date else "",
-                    "subscription_name": subscription_name
+                    "subscription_name": subscription_name,
+                    "plan": "Trial" if is_trial else get_plan(subscription_name, site_name) if subscription_end_date else ""
                 })
         return site_info
     except Exception as e:
@@ -310,3 +311,17 @@ def get_subscription_end_date(date, site_name):
         return frappe.db.get_value("Subscription", data.subscription, ['end_date']).strftime('%d-%m-%Y')
     else:
         return date.strftime('%d-%m-%Y')
+
+def get_plan(subscription_name, site_name):
+    if frappe.db.get_value("Site", site_name, ['is_renew']):
+        parent_doc = frappe.get_doc("Site", site_name)
+        data = [row for row in parent_doc.get("site_subscription") if row.is_renew == 1][0]
+        sql = f""" SELECT plan FROM `tabSubscription Plan Detail` WHERE parent=%s"""
+        plan = frappe.db.sql(sql, (data,), as_dict=True)
+        if plan:
+            return plan[0].get('plan')
+    else:
+        sql = f""" SELECT plan FROM `tabSubscription Plan Detail` WHERE parent=%s"""
+        plan = frappe.db.sql(sql, (subscription_name,), as_dict=True)
+        if plan:
+            return plan[0].get('plan')
