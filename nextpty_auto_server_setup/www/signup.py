@@ -153,7 +153,7 @@ def create_subscription(data, customer, plan="Trial", is_trial=1, subscription_t
             si.subscription = doc.name
             si.status = "Paid"
             si.due_date = today()
-            si.currency = "USD" if staging_site or production_site else si.currency = "INR"
+            si.currency = "USD" if staging_site or production_site else "INR"
             
             si.selling_price_list = "Standard Selling"
             amount = frappe.db.get_value("Subscription Plan", plan, ['cost'])
