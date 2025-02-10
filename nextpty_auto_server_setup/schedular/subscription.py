@@ -186,9 +186,10 @@ def re_new_subscription(site, subscription_type, plan, is_trial=0, renew_from_tr
                 is_active = 0 if int(renew_from_trial) else 1
                 if subscription:
                     doc = frappe.get_doc("Site", site)
-                    for i in doc.site_subscription:
-                        i.is_active = 0
-                    doc.save(ignore_permissions=True)
+                    if not renew_from_trial:
+                        for i in doc.site_subscription:
+                            i.is_active = 0
+                        doc.save(ignore_permissions=True)
                     
                     doc.is_renew = renew_from_trial
                     doc.append('site_subscription', {
