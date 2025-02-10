@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 import re
 import frappe, json
 from frappe.auth import LoginManager
+import frappe.utils
 import requests
 from frappe.utils import today
 
@@ -140,6 +141,11 @@ def create_subscription(data, customer, plan="Trial", is_trial=1, subscription_t
         doc.insert(ignore_permissions=True)
         frappe.db.commit()
         if not is_trial:
+            site_url = frappe.utils.get_url()
+            local_site = True if site_url == "http://server.local:8001" or site_url == "http://127.0.0.1:8001" else False
+            production_site = True if site_url == "https://nextpty.com" or site_url == "https://nextpty.frappe.cloud" or site_url == "https://www.nextpty.com" else False
+            staging_site = True if site_url == "https://nextpty-uat.frappe.cloud" or site_url == "https://uat-server-site.frappe.cloud" else False
+            
             s_user = frappe.session.user
             frappe.set_user('Administrator')
             si = frappe.new_doc("Sales Invoice")
@@ -147,7 +153,8 @@ def create_subscription(data, customer, plan="Trial", is_trial=1, subscription_t
             si.subscription = doc.name
             si.status = "Paid"
             si.due_date = today()
-            si.currency = "USD"
+            si.currency = "USD" if staging_site or production_site else si.currency = "INR"
+            
             si.selling_price_list = "Standard Selling"
             amount = frappe.db.get_value("Subscription Plan", plan, ['cost'])
             item = frappe.db.get_value("Subscription Plan", plan, ['item'])
@@ -164,9 +171,17 @@ def create_subscription(data, customer, plan="Trial", is_trial=1, subscription_t
             pe.payment_type = "Receive"
             pe.party_type = "Customer"
             pe.party = customer
+            
             abbr = "N"
-            pe.paid_to = f"1201 - Banco General - 0301251505 - {abbr}"
-            # pe.paid_to = "Bank Account - SD"
+            if staging_site:
+                pe.paid_to = f"1201 - Banco General - 0301251505 - {abbr}"
+            elif local_site:
+                pe.paid_to = "Bank Account - SD"
+            elif production_site:
+                pe.paid_to = f"1201 - Banco General - 04-43-96-748339-2 - {abbr}"
+            else:
+                pe.paid_to = f"Bank Account - {abbr}"
+                
             pe.target_exchange_rate = 1
             pe.paid_amount= amount
             pe.received_amount = amount
