@@ -223,9 +223,11 @@
                         document.getElementById('contact_name').value = "";
                         document.getElementById('contact_email').value = "";
                         document.getElementById('site_name').value = "";
-                        window.location = "/dashboard"
-                        window.location.reload()
-
+                        if (res.message.get('status') == true){
+                            window.location = "/dashboard"
+                            window.location.reload()
+                            frappe.msgprint(title=frappe._('Your site creation is in progress...'), msg=frappe._("Soon, we will share the credentials and the URL of your site with you via email."))
+                        }
                     },
                     error: function (err) {
                         alert("Error: " + err.message);

@@ -38,7 +38,7 @@ def signup(formdata):
                         frappe.msgprint(title=frappe._('Your site creation is in progress...'), msg=frappe._(f"Soon, we will share the credentials and the URL of your site with you via email at {data['contact_email']}."))
                         frappe.local.response["type"] = "redirect"
                         frappe.local.response["location"] = "/dashboard"
-                        return
+                        return {"status": True}
 
 @frappe.whitelist()
 def site_exist(site_name):
